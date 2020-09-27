@@ -1,5 +1,5 @@
 '''
-------------------------------------------------------
+65;6003;1c------------------------------------------------------
 GOAL:
     Step through bins (spectra) and calculate the temperature value
     of each bin using XSPEC for DEPROJECTED quantites
@@ -14,11 +14,13 @@ ADDITIONAL NOTES:
 #from astropy.io import fits
 import os
 import subprocess
+import astropy.units as u
 from sherpa.astro.xspec import *
 from sherpa.astro.all import *
 from sherpa.astro.ui import *
 from sherpa.all import *
 from LSCalc import ls_calc
+import deproject
 #TURN OFF ON-SCREEN OUTPUT FROM SHERPA
 import logging
 logger = logging.getLogger("sherpa")
@@ -200,28 +202,29 @@ def Fitting_Deprojected(base_directory,ObsIDs,file_name,num_files,redshift,n_H,T
     # Get region values
     region_vals = []  # First get regions in kpc
     for region_ct in range(num_bins):
-        with open(region_dir+reg_file_prefix+'_'+str(region_ct)+'.reg') as reg_:
+        with open(region_dir+reg_file_prefix+str(region_ct)+'.reg') as reg_:
             reg_data = reg_.readlines()[3].split(')')[0].split('(')[1]
-            r_in_ = ls_calc(redshift,float(reg_data.split(',')[3].strip('"')))
-            r_in.append(r_in_)
-            r_out_ = ls_calc(redshift,float(reg_data.split(',')[2].strip('"')))
-            if r_in not in region_vals:
-                region_vals.append(r_in)
-            if r_out not in region_vals:
-                region_vals.append(r_out)
+            r_in_ = ls_calc(redshift,float(reg_data.split(',')[2].strip('"')))
+            #r_in.append(r_in_)
+            r_out_ = ls_calc(redshift,float(reg_data.split(',')[3].strip('"')))
+            if r_in_ not in region_vals:
+                region_vals.append(r_in_)
+            if r_out_ not in region_vals:
+                region_vals.append(r_out_)
+    print(region_vals)
     # Create deprojection instance
     dep = deproject.Deproject(radii=[float(x) for x in region_vals]* u.arcsec)
     # load associated datasets
     for ann in range(len(region_vals)-1):
         for obsid in ObsIDs:
             # Take pi file from obsid/repro
-            dep.load_pha(obsid+'/repro/'+file_name+'_%s.pi' % (obsid, ann), annulus=ann)
+            dep.load_pha(obsid+'/repro/'+file_name+'%s.pi' % (str(ann)), annulus=ann)
     # Set up fit parameters
     dep.set_source('xsphabs*xsapec')
     dep.ignore(None, 0.5)
     dep.ignore(8, None)
     dep.freeze("xsphabs.nh")
-    dep.set_par('xsapec.redshift', Redshift)
+    dep.set_par('xsapec.redshift', redshift)
     dep.set_par('xsphabs.nh', n_H)
     dep.subtract()  # Subtract associated background. Read in automatically earlier
     onion = dep.fit()

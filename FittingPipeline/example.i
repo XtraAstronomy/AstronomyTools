@@ -14,6 +14,6 @@ redshift = 0.0179
 n_H = 0.137
 Temp_Guess = 2.0
 #----------CHOICES---------------#
-extract_spectrum = True
+extract_spectrum = False
 fit_spec = True
 plot = True
