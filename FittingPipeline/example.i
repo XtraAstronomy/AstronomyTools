@@ -1,11 +1,11 @@
 #--------------------------SPECTRUM EXTRACTION-----------------------------#
 reg_file_prefix = reg_
-num_files = 2
+num_files = 3
 #--------------------------FITTING---------------------------#
 #----------INPUT DATA------------#
-base_dir = /home/user/Documents
+base_dir = /home/carterrhea/Documents/NGC4636
 Name =
-ObsIDs = 4636
+ObsIDs = 3926
 source_file = reg
 output_dir = binned/
 Temp_data = Temp_bin.txt

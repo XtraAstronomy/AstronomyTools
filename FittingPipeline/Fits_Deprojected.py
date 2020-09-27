@@ -14,13 +14,9 @@ ADDITIONAL NOTES:
 #from astropy.io import fits
 import os
 import subprocess
-from sherpa.optmethods import LevMar
-from sherpa.stats import LeastSq
-from sherpa.plot import DataPlot
 from sherpa.astro.xspec import *
 from sherpa.astro.all import *
 from sherpa.astro.ui import *
-from pychips.all import *
 from sherpa.all import *
 from LSCalc import ls_calc
 #TURN OFF ON-SCREEN OUTPUT FROM SHERPA
@@ -212,7 +208,7 @@ def Fitting_Deprojected(base_directory,ObsIDs,file_name,num_files,redshift,n_H,T
             if r_in not in region_vals:
                 region_vals.append(r_in)
             if r_out not in region_vals:
-                region_vals,.append(r_out)
+                region_vals.append(r_out)
     # Create deprojection instance
     dep = deproject.Deproject(radii=[float(x) for x in region_vals]* u.arcsec)
     # load associated datasets

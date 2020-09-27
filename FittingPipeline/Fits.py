@@ -24,13 +24,9 @@ ADDITIONAL NOTES:
 #from astropy.io import fits
 import os
 import subprocess
-from sherpa.optmethods import LevMar
-from sherpa.stats import LeastSq
-from sherpa.plot import DataPlot
 from sherpa.astro.xspec import *
 from sherpa.astro.all import *
 from sherpa.astro.ui import *
-from pychips.all import *
 from sherpa.all import *
 #TURN OFF ON-SCREEN OUTPUT FROM SHERPA
 import logging
@@ -177,7 +173,7 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,sp
 
 
 
-def Fitting(base_directory,dir,file_name,num_files,redshift,n_H,Temp_guess,output_file:
+def Fitting(base_directory,dir,file_name,num_files,redshift,n_H,Temp_guess,output_file):
     """
     Fit each region's spectra and create a text file containing the spectral
     fit information for each bin
