@@ -165,7 +165,7 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,sp
 
 
 
-def Fitting_Deprojected(base_directory,ObsIDs,file_name,num_files,redshift,n_H,Temp_guess,output_file, regions):
+def Fitting_Deprojected(base_directory,ObsIDs,file_name,num_files,redshift,n_H,Temp_guess,output_file, region_dir, reg_file_prefix, num_bins):
     """
     Fit each region's spectra and create a text file containing the spectral
     fit information for each bin
@@ -199,8 +199,8 @@ def Fitting_Deprojected(base_directory,ObsIDs,file_name,num_files,redshift,n_H,T
     # Set up deprojection
     # Get region values
     region_vals = []  # First get regions in kpc
-    for region in regions:
-        with open(reg_dir+region+'.reg') as reg_:
+    for region_ct in range(num_bins):
+        with open(region_dir+reg_file_prefix+'_'+str(region_ct)+'.reg') as reg_:
             reg_data = reg_.readlines()[3].split(')')[0].split('(')[1]
             r_in_ = ls_calc(redshift,float(reg_data.split(',')[3].strip('"')))
             r_in.append(r_in_)
