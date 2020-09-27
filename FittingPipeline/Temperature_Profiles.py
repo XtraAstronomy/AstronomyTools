@@ -28,7 +28,7 @@ if inputs['extract_spectrum'].lower() == 'true':
 #-----------------------------------------------FIT SPECTRA-------------------------------------------#
 if inputs['fit_spec'].lower() == 'true':
     # Deprojection
-    Fitting_Deprojected(inputs['base_dir']+'/'+inputs['Name'],inputs['ObsIDs'],inputs['reg_file_prefix'],int(num_bins),inputs['redshift'],inputs['n_H'],inputs['Temp_Guess'],inputs['Temp_data'],base+'/regions/')
+    Fitting_Deprojected(inputs['base_dir']+'/'+inputs['Name'],inputs['ObsIDs'],inputs['reg_file_prefix'],int(num_bins),inputs['redshift'],inputs['n_H'],inputs['Temp_Guess'],inputs['Temp_data'],base+'/regions/', inputs['reg_file_prefix'], num_bins)
     # Not Deprojected
     Fitting(inputs['base_dir']+'/'+inputs['Name'],inputs['ObsIDs'],inputs['reg_file_prefix'],int(num_bins),inputs['redshift'],inputs['n_H'],inputs['Temp_Guess'],inputs['Temp_data'],base+'/regions/')
 #-----------------------------------------------PLOT FITS-----------------------------------------------#
