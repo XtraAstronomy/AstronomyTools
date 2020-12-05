@@ -22,8 +22,7 @@ from sherpa.plot import DataPlot
 from sherpa.astro.xspec import *
 from sherpa.astro.all import *
 from sherpa.astro.ui import *
-from pychips.all import *
-from sherpa.all import *
+#from sherpa.all import *
 from multiprocessing import Process, JoinableQueue
 from joblib import Parallel, delayed
 from tqdm import tqdm
@@ -83,7 +82,7 @@ def obsid_set(src_model_dict,bkg_model_dict,obsid, bkg_spec,obs_count,redshift,n
 #------------------------------------------------------------------------------#
 #------------------------------------------------------------------------------#
 def FitXSPEC(spectrum_files,background_files,redshift,n_H,temp_guess,grouping,spec_count,plot_dir):
-
+    #print('Everything is set')
     set_stat('chi2gehrels')
     set_method('levmar')
     hdu_number = 1  #Want evnts so hdu_number = 1
@@ -95,54 +94,57 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,temp_guess,grouping,sp
     for ob_num in range(obs_count-1):  # Group and set range
         group_counts(ob_num+1,grouping)
         notice_id(ob_num+1,0.5,8.0)
+    #print('Fitting')
     fit()  # FIT!
-    set_log_sherpa()
-    set_covar_opt("sigma",2)
-    covar(get_model_component('apec1').kT,get_model_component('apec1').Abundanc)
+    #set_log_sherpa()
+    #set_covar_opt("sigma",1)
+    #print('Calculating Errors')
+    #covar(get_model_component('apec1').kT,get_model_component('apec1').Abundanc)
     #----------Calculate min/max values---------#
-    mins = list(get_covar_results().parmins)
-    maxes = list(get_covar_results().parmaxes)
-    for val in range(len(mins)):
-        if isFloat(mins[val]) == False:
-            mins[val] = 0.0
-        if isFloat(maxes[val]) == False:
-            maxes[val] = 0.0
-        else:
-            pass
+    #mins = list(get_covar_results().parmins)
+    #maxes = list(get_covar_results().parmaxes)
+    #for val in range(len(mins)):
+    #    if isFloat(mins[val]) == False:
+    #        mins[val] = 0.0
+    #    if isFloat(maxes[val]) == False:
+    #        maxes[val] = 0.0
+    #    else:
+    #        pass
     #Get important values
     Temperature = apec1.kT.val
-    Temp_min = Temperature+mins[0]
-    Temp_max = Temperature+maxes[0]
+    Temp_min = Temperature#+mins[0]
+    Temp_max = Temperature#+maxes[0]
     Abundance = apec1.Abundanc.val;
-    Ab_min = Abundance+mins[1];
-    Ab_max = Abundance+maxes[1]
+    Ab_min = Abundance#+mins[1];
+    Ab_max = Abundance#+maxes[1]
     #Calculate norm as average value
     Norm = 0; Norm_min = 0; Norm_max = 0
     for id_ in range(len(spectrum_files)):
         Norm += get_model_component('apec'+str(id_+1)).norm.val #add up values
         #get errors
-        covar(get_model_component('apec'+str(id_+1)).norm)
-        mins = list(get_covar_results().parmins)
-        maxes = list(get_covar_results().parmaxes)
-        for val in range(len(mins)):
-            if isFloat(mins[val]) == False:
-                mins[val] = 0.0
-            if isFloat(maxes[val]) == False:
-                maxes[val] = 0.0
-            else:
-                pass
-        Norm_min += mins[0]
-        Norm_max += maxes[0]
+        #covar(get_model_component('apec'+str(id_+1)).norm)
+        #mins = list(get_covar_results().parmins)
+        #maxes = list(get_covar_results().parmaxes)
+        #for val in range(len(mins)):
+    #        if isFloat(mins[val]) == False:
+    #            mins[val] = 0.0
+    #        if isFloat(maxes[val]) == False:
+    #            maxes[val] = 0.0
+    #        else:
+    #            pass
+    #    Norm_min += mins[0]
+    #    Norm_max += maxes[0]
     Norm = Norm/len(spectrum_files)
     Norm_min = Norm+Norm_min/len(spectrum_files)
     Norm_max = Norm+Norm_max/len(spectrum_files)
     f = get_fit_results()
     reduced_chi_sq = f.rstat
-    #---------Set up Flux Calculation----------#
-    flux_calculation = sample_flux(get_model_component('apec1'), 0.01, 50.0, num=1000, confidence=90)[0]
-    Flux = flux_calculation[0]
-    Flux_min = flux_calculation[1]
-    Flux_max = flux_calculation[2]
+    #---------Set up Flux Calculation----
+    #print('Flux Calculations')
+    #flux_calculation = sample_flux(get_model_component('apec1'), 0.01, 50.0, num=1000, confidence=90)[0]
+    Flux = 0#flux_calculation[0]
+    Flux_min = 0#flux_calculation[1]
+    Flux_max = 0#flux_calculation[2]
     reset(get_model())
     reset(get_source())
     clean()
@@ -170,6 +172,7 @@ def fit_loop(dir,bin_spec_dir,file_name,redshift,n_H,temp_guess,grouping,plot_di
     Return:
         None
     """
+    #print('Starting fit')
     os.chdir(base_directory)
     spectrum_files = []
     background_files = []
@@ -225,7 +228,7 @@ def Fitting(base_directory,dir,file_name,num_files,redshift,n_H,temp_guess,outpu
     """
     energy_min = 0.5
     energy_max = 8.0
-    grouping = 5
+    grouping = 10
     plot_dir = base_directory+'/FitPlots/'
     output_file = output_file.split('.')[0]
     os.chdir(base_directory)

@@ -25,7 +25,7 @@ if inputs['bin_spec'].lower() == 'false':
 #-----------------------------------------------FIT SPECTRA-------------------------------------------#
 if inputs['fit_spec'].lower() == 'true':
     Fitting( inputs['base_dir']+'/'+inputs['Name'],inputs['ObsIDs'],inputs['source_file'],int(num_bins),
-        inputs['redshift'],inputs['n_H'],inputs['Temp_Guess'],inputs['Temp_data'],inputs['output_dir'],inputs['multi'])
+        inputs['redshift'],inputs['n_H'],inputs['Temp_Guess'],inputs['Temp_data'],inputs['output_dir'])
 #-----------------------------------------------PLOT FITS-----------------------------------------------#
 if inputs['plot'].lower() == 'true':
    plot_Bins(base+'/'+inputs['WVT_data']+'.txt',base+'/'+inputs['Temp_data'],base,inputs['Name'],inputs['Colormap'],

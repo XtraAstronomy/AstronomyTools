@@ -226,15 +226,19 @@ def Fitting_Deprojected(base_directory,ObsIDs,file_name,num_files,redshift,n_H,T
     dep.freeze("xsphabs.nh")
     dep.set_par('xsapec.redshift', redshift)
     dep.set_par('xsphabs.nh', n_H)
+    dep.set_par('xsapec.Abundanc', 0.3)
     dep.subtract()  # Subtract associated background. Read in automatically earlier
     onion = dep.fit()
     onion_errs = dep.conf()
     print(onion, onion_errs)
-    densities = dep.get_densities()
+    for row in onion[0]:
+        print(row)
+    #densities = dep.get_densities()
     file_to_write = open(output_file+"_deproj.txt",'w+')
     file_to_write.write("BinNumber Temperature Temp_min Temp_max Abundance Ab_min Ab_max Norm Norm_min Norm_max ReducedChiSquare Flux Flux_min Flux_max\n")
     file_to_write.write('BinNumber r_in r_out temp norm dens \n')
-    for ct,row,row_err in enumerate(zip(onion[:], onion_errs[:])):
-        print(row, row_err)
+    for row,row_err in enumerate(zip(onion[:], onion_errs[:])):
+        #print(row, row_err)
+        
         file_to_write.write('%i %.2E %.2E %.2E %.2E %.2E \n'%(row[0], row[1], row[2], row[-3], row[-2], row[-1]))
     file_to_write.close()
