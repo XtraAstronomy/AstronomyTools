@@ -25,14 +25,14 @@ In order to run this program you need the following:
    :maxdepth: 2
 
 Documentation of Individual Routines:
-=====================================
+-------------------------------------
 
 Fitting routines
-----------------
+^^^^^^^^^^^^^^^^
 .. automodule:: TemperatureMapPipeline.Fits
     :members:
 
 Plotting routines
------------------
+^^^^^^^^^^^^^^^^^
 .. automodule:: TemperatureMapPipeline.Plots
     :members:
