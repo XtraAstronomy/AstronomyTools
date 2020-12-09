@@ -1,17 +1,13 @@
 '''
-------------------------------------------------------
 GOAL:
     Step through bins (spectra) and calculate the temperature value
     of each bin using XSPEC
-------------------------------------------------------
-------------------------------------------------------
+
 OUTPUTS:
     A file which contains the bin number and associated
     temperature and reduced chi-squared
-------------------------------------------------------
 ADDITIONAL NOTES:
     Be sure to run heainit first
-------------------------------------------------------
 '''
 #from astropy.io import fits
 import os
@@ -53,6 +49,13 @@ def isFloat(string):
 
 #------------------------------------------------------------------------------#
 def obsid_set(src_model_dict,bkg_model_dict,obsid, bkg_spec,obs_count,redshift,nH_val,Temp_guess):
+    """ Set the observations' model using an absorbed apec model. Each observation will be tied
+    with the other to allow simultaneous fitting. Additionally, we apply a standard background model.
+
+    Args:
+        src_model_dict (dict): Dictionary of source models created in Fit_Xspec
+
+    """
     load_pha(obs_count,obsid) #Read in
     if obs_count == 1:
         src_model_dict[obsid] = xsphabs('abs'+str(obs_count)) * xsapec('apec'+str(obs_count)) #set model and name

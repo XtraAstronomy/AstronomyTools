@@ -1,0 +1,297 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Temperature Map &mdash; Astronomy Tools 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to Astronomy Tools’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> Astronomy Tools
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Temperature Map</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-TemperatureMapPipeline.Fits">Fitting routines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-TemperatureMapPipeline.Plots">Plotting routines</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Astronomy Tools</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Temperature Map</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/temperatureMapPipeline.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="temperature-map">
+<span id="temperature-map-pipeline"></span><h1>Temperature Map<a class="headerlink" href="#temperature-map" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<div class="section" id="module-TemperatureMapPipeline.Fits">
+<span id="fitting-routines"></span><h2>Fitting routines<a class="headerlink" href="#module-TemperatureMapPipeline.Fits" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt>GOAL:</dt><dd><p>Step through bins (spectra) and calculate the temperature value
+of each bin using XSPEC</p>
+</dd>
+<dt>OUTPUTS:</dt><dd><p>A file which contains the bin number and associated
+temperature and reduced chi-squared</p>
+</dd>
+<dt>ADDITIONAL NOTES:</dt><dd><p>Be sure to run heainit first</p>
+</dd>
+</dl>
+<dl class="py function">
+<dt id="TemperatureMapPipeline.Fits.Fitting">
+<code class="sig-prename descclassname">TemperatureMapPipeline.Fits.</code><code class="sig-name descname">Fitting</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">base_directory</span></em>, <em class="sig-param"><span class="n">dir</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">num_files</span></em>, <em class="sig-param"><span class="n">redshift</span></em>, <em class="sig-param"><span class="n">n_H</span></em>, <em class="sig-param"><span class="n">temp_guess</span></em>, <em class="sig-param"><span class="n">output_file</span></em>, <em class="sig-param"><span class="n">bin_spec_dir</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TemperatureMapPipeline.Fits.Fitting" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit each region’s spectra and create a text file containing the spectral
+fit information for each bin
+:param base_directory: Path to main Directory
+:param dir: ObsID
+:param file_name: Root name of PI/PHA file
+:param num_files: Number of spatial bins
+:param redshift: Redshift of cluster
+:param n_H: Column density
+:param temp_guess: Initial temperature guess
+:param output_file: Text file containing each bin’s spectral fit information
+:param bin_spec_dir: Path to extracted spectra for each bin within an ObsID</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="TemperatureMapPipeline.Fits.concat_temp_data">
+<code class="sig-prename descclassname">TemperatureMapPipeline.Fits.</code><code class="sig-name descname">concat_temp_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_spec</span></em>, <em class="sig-param"><span class="n">output_file</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TemperatureMapPipeline.Fits.concat_temp_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenate temperature information. Used if running on several processors
+:param num_spec: Number of spectra (or bins)
+:param output_file: File name of final concatenated temperature data</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="TemperatureMapPipeline.Fits.fit_loop">
+<code class="sig-prename descclassname">TemperatureMapPipeline.Fits.</code><code class="sig-name descname">fit_loop</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dir</span></em>, <em class="sig-param"><span class="n">bin_spec_dir</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">redshift</span></em>, <em class="sig-param"><span class="n">n_H</span></em>, <em class="sig-param"><span class="n">temp_guess</span></em>, <em class="sig-param"><span class="n">grouping</span></em>, <em class="sig-param"><span class="n">plot_dir</span></em>, <em class="sig-param"><span class="n">base_directory</span></em>, <em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TemperatureMapPipeline.Fits.fit_loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loop for fitting spectra.
+:param base_directory: Path to main Directory
+:param dir: ObsID
+:param file_name: Root name of PI/PHA file
+:param num_files: Number of spatial bins
+:param redshift: Redshift of cluster
+:param n_H: Column density
+:param temp_guess: Initial temperature guess
+:param output_file: Text file containing each bin’s spectral fit information
+:param bin_spec_dir: Path to extracted spectra for each bin within an ObsID
+:param grouping: Number of counts to bin in sherpa fit
+:param i: Bin number
+:param plot_dir: Path to plots</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="TemperatureMapPipeline.Fits.obsid_set">
+<code class="sig-prename descclassname">TemperatureMapPipeline.Fits.</code><code class="sig-name descname">obsid_set</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">src_model_dict</span></em>, <em class="sig-param"><span class="n">bkg_model_dict</span></em>, <em class="sig-param"><span class="n">obsid</span></em>, <em class="sig-param"><span class="n">bkg_spec</span></em>, <em class="sig-param"><span class="n">obs_count</span></em>, <em class="sig-param"><span class="n">redshift</span></em>, <em class="sig-param"><span class="n">nH_val</span></em>, <em class="sig-param"><span class="n">Temp_guess</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TemperatureMapPipeline.Fits.obsid_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the observations’ model using an absorbed apec model. Each observation will be tied
+with the other to allow simultaneous fitting. Additionally, we apply a standard background model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>src_model_dict</strong> (<em>dict</em>) – Dictionary of source models created in Fit_Xspec</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-TemperatureMapPipeline.Plots">
+<span id="plotting-routines"></span><h2>Plotting routines<a class="headerlink" href="#module-TemperatureMapPipeline.Plots" title="Permalink to this headline">¶</a></h2>
+<p>This program will plot the final temperature map using the temperatures calculated from sherpa and the binnings from WVT</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Astronomy Tools’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Carter Rhea
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
