@@ -15,10 +15,14 @@ from read_input import read_input_file
 def ggf1(infile,outfile,sigma):
     '''
     Creates a log-scaled, smoothed, gaussian gradient filtered image (in that order) from a fits file
-    :param infile: fits image file to read in
-    :param outfile: fits file to create
-    :param sigma: sigma value for gaussian used in filtering
-    :return: both fits file and png image
+
+    Args:
+        infile (str): fits image file to read in
+        outfile (str): fits file to create
+        sigma (int): sigma value for gaussian used in filtering
+
+    Returns:
+        Both fits file and png image
     '''
     #First we will just read in the data and get the information we need
     file_temp = fits.open(infile)
@@ -42,16 +46,24 @@ def ggf1(infile,outfile,sigma):
 def combine_ggf(img_dir,infiles,radius_bins,weight_bins,fits_file):
     '''
     Combine GGF plots. For each radial region, we choose a weight for the image.
+
     1. Create mask for each image based of weight_bins and radius_bins
+
     2. Add weighted images together for each bin
+
     3. Reconstruct complete weighted image by recombining weighted, binned image
+
     The image files all need to be the same size and of the same region!
-    :param img_dir: Full path to image files
-    :param infiles: List of input files -- GGF
-    :param radius_bins: List of radii used for binning
-    :param weight_bins: List of bin weights corresponding to each GGF image
-    :param fits_file: Input Fits Image File for header info
-    :return: Reconstructed weighted-GGF image and fits file
+
+    Args:
+        img_dir (str): Full path to image files
+        infiles (str): List of input files -- GGF
+        radius_bins (str): List of radii used for binning
+        weight_bins (str): List of bin weights corresponding to each GGF image
+        fits_file (str): Input Fits Image File for header info
+
+    Returns:
+        Reconstructed weighted-GGF image and fits file
     '''
     masked_images = [] #List of 2d numpy arrays. Each item in the list will be one of the masked images
     ct = 0
@@ -110,10 +122,14 @@ def combine_ggf(img_dir,infiles,radius_bins,weight_bins,fits_file):
 def make_radial_mask(img_array,radii,center_pixel):
     '''
     Create mask for image based off weight bins, center pixel, and radial values
-    :param img_array: numpy array from reading in image
-    :param radii: (R_in,R_out) tuple of inner and outer radius WITHIN mask
-    :param center_pixel: (X,Y) tuple of central pixel from which the radial bins expand
-    :return: radial mask for image as np array of booleans
+
+    Args:
+        img_array (array): numpy array from reading in image
+        radii (float,float): (R_in,R_out) tuple of inner and outer radius WITHIN mask
+        center_pixel (float,float): (X,Y) tuple of central pixel from which the radial bins expand
+
+    Returns:
+        radial mask for image as np array of booleans
     '''
     #Step through entire image array
     (len_x,len_y) = img_array.shape
