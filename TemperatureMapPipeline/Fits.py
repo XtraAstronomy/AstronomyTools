@@ -50,13 +50,31 @@ def isFloat(string):
 #------------------------------------------------------------------------------#
 def obsid_set(src_model_dict,bkg_model_dict,obsid, bkg_spec,obs_count,redshift,nH_val,Temp_guess):
     """ Set the observations' model using an absorbed apec model. Each observation will be tied
-    with the other to allow simultaneous fitting. Additionally, we apply a standard background model.
+    with the other to allow simultaneous fitting.
+
+    We additionally apply a background model.
+
+    It contains two (frozen) thermal emission pieces:
+        1. unabsorbed apec model with kT=0.18 keV
+        2. absorbed bremmstrahlung emission with kT=40 keV
+
 
     Args:
-        src_model_dict (dict): Dictionary of source models created in Fit_Xspec
+        src_model_dict (dict): Dictionary of source models -- Created in FitXSPEC()
+        bkg_model_dict (dict): Dictionary of background models -- Created in FitXSPEC()
+        obsid (str): Current Chandra ObsID
+        bkg_spec (str): Background file corresponding to ObsID
+        obs_ct (int): Relative ObsID number
+        redshift (float): Cosmological Redshift of Object
+        nH_val (float): Column Density in direction of object -- units of 10^{-22} cm^{-2}
+        Temp_guess (float): Estimate of Temperature Value
+
+    Returns:
+        Updated src_model_dict and bkg_model_dict
 
     """
     load_pha(obs_count,obsid) #Read in
+    # If first observation ID
     if obs_count == 1:
         src_model_dict[obsid] = xsphabs('abs'+str(obs_count)) * xsapec('apec'+str(obs_count)) #set model and name
         # Change src model component values
@@ -72,6 +90,7 @@ def obsid_set(src_model_dict,bkg_model_dict,obsid, bkg_spec,obs_count,redshift,n
         get_model_component('apec' + str(obs_count)).redshift = redshift
         get_model_component('apec' + str(obs_count)).Abundanc = get_model_component('apec1').Abundanc  # link to first kT
 
+    # Setup background model
     bkg_model_dict[obsid] = xsapec('bkgApec'+str(obs_count))+get_model_component('abs1')*xsbremss('brem'+str(obs_count))
     set_bkg(obs_count, unpack_pha(bkg_spec))
     set_source(obs_count, src_model_dict[obsid]) #set model to source
@@ -84,7 +103,44 @@ def obsid_set(src_model_dict,bkg_model_dict,obsid, bkg_spec,obs_count,redshift,n
     return None
 #------------------------------------------------------------------------------#
 #------------------------------------------------------------------------------#
-def FitXSPEC(spectrum_files,background_files,redshift,n_H,temp_guess,grouping,spec_count,plot_dir):
+def FitXSPEC(spectrum_files,background_files,redshift,n_H,temp_guess,grouping,spec_count,plot_dir, errors=False):
+    """
+    Fit observations simultaneously using models defined in obsid_set().
+
+    Args:
+        spectrum_files (list): List of spectrum files (i.e. ['obs1.pi', 'obs2.pi'])
+        background_files (list): List of background files (i.e. ['obs1_bkg.pi', 'obs2_bkg.pi'])
+        redshift (float): Cosmological Redshift of Object
+        n_H (float): Column Density in direction of object -- units of 10^{-22} cm^{-2}
+        Temp_guess (float): Estimate of Temperature Value
+        grouping (int): Number of counts per bin (i.e. 5)
+        spec_count (int): Local number of spectra with reference to the total number of spectra being fitted
+        plot_dir (str): Path to directory containing plots
+
+    Kwargs:
+        errors (bool): Boolean to calculate 1-sigma errors (default=False)
+
+    Returns:
+        Temperature: Fitted Temperature Value in keV
+        Temp_min: Minimum Fitted Temperature Value at 1-sigma in keV
+        Temp_max: Maximum Fitted Temperature Value at 1-sigma in keV
+        Abundance: Fitted Abundance Value in Z_{solar}
+        Ab_min: Minimum Fitted Abundance Value at 1-sigma in Z_{solar}
+        Ab_max: Maximum Fitted Abundance Value at 1-sigma in Z_{solar}
+        Norm: Fitted Normalization Value
+        Norm_min: Minimum Fitted Normalization Value at 1-sigma
+        norm_max: Maximum Fitted Normalization Value at 1-sigma
+        reduced_chi_sq: Reduced Chi Square Value for the Fit
+        Flux: Fitted Flux Value in ergs/s/cm^{-2}
+        Flux_min: Minimum Flux Value in ergs/s/cm^{-2}
+        Flux_max: Maximum Flux Value in ergs/s/cm^{-2}
+
+    Note:
+        If the fits are taking too long, set errors=False. The min and max value will just be copies of the fitted value.
+
+        Flux errors are always calculated
+
+    """
     #print('Everything is set')
     set_stat('chi2gehrels')
     set_method('levmar')
@@ -99,55 +155,69 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,temp_guess,grouping,sp
         notice_id(ob_num+1,0.5,8.0)
     #print('Fitting')
     fit()  # FIT!
-    #set_log_sherpa()
-    #set_covar_opt("sigma",1)
-    #print('Calculating Errors')
-    #covar(get_model_component('apec1').kT,get_model_component('apec1').Abundanc)
-    #----------Calculate min/max values---------#
-    #mins = list(get_covar_results().parmins)
-    #maxes = list(get_covar_results().parmaxes)
-    #for val in range(len(mins)):
-    #    if isFloat(mins[val]) == False:
-    #        mins[val] = 0.0
-    #    if isFloat(maxes[val]) == False:
-    #        maxes[val] = 0.0
-    #    else:
-    #        pass
     #Get important values
     Temperature = apec1.kT.val
-    Temp_min = Temperature#+mins[0]
-    Temp_max = Temperature#+maxes[0]
     Abundance = apec1.Abundanc.val;
-    Ab_min = Abundance#+mins[1];
-    Ab_max = Abundance#+maxes[1]
     #Calculate norm as average value
     Norm = 0; Norm_min = 0; Norm_max = 0
     for id_ in range(len(spectrum_files)):
         Norm += get_model_component('apec'+str(id_+1)).norm.val #add up values
-        #get errors
-        #covar(get_model_component('apec'+str(id_+1)).norm)
-        #mins = list(get_covar_results().parmins)
-        #maxes = list(get_covar_results().parmaxes)
-        #for val in range(len(mins)):
-    #        if isFloat(mins[val]) == False:
-    #            mins[val] = 0.0
-    #        if isFloat(maxes[val]) == False:
-    #            maxes[val] = 0.0
-    #        else:
-    #            pass
-    #    Norm_min += mins[0]
-    #    Norm_max += maxes[0]
     Norm = Norm/len(spectrum_files)
-    Norm_min = Norm+Norm_min/len(spectrum_files)
-    Norm_max = Norm+Norm_max/len(spectrum_files)
+
+
+    if errors == False:
+        Temp_min = Temperature  # +mins[0]
+        Temp_max = Temperature  # +maxes[0]
+        Ab_min = Abundance  # +mins[1];
+        Ab_max = Abundance  # +maxes[1]
+        Norm_min = Norm  # +Norm_min/len(spectrum_files)
+        Norm_max = Norm  # +Norm_max/len(spectrum_files)
+    elif errors == True:
+        set_covar_opt("sigma",1)
+        #print('Calculating Errors')
+        covar(get_model_component('apec1').kT,get_model_component('apec1').Abundanc)
+        #----------Calculate min/max values---------#
+        mins = list(get_covar_results().parmins)
+        maxes = list(get_covar_results().parmaxes)
+        for val in range(len(mins)):
+            if isFloat(mins[val]) == False:
+                mins[val] = 0.0
+            if isFloat(maxes[val]) == False:
+                maxes[val] = 0.0
+            else:
+                pass
+        Temp_min = Temperature  # +mins[0]
+        Temp_max = Temperature  # +maxes[0]
+        Ab_min = Abundance  # +mins[1];
+        Ab_max = Abundance  # +maxes[1]
+
+        Norm = 0; Norm_min = 0; Norm_max = 0
+        for id_ in range(len(spectrum_files)):
+            Norm += get_model_component('apec'+str(id_+1)).norm.val  # add up values
+            #get errors
+            covar(get_model_component('apec'+str(id_+1)).norm)
+            mins = list(get_covar_results().parmins)
+            maxes = list(get_covar_results().parmaxes)
+            for val in range(len(mins)):
+                if isFloat(mins[val]) == False:
+                    mins[val] = 0.0
+                if isFloat(maxes[val]) == False:
+                    maxes[val] = 0.0
+                else:
+                    pass
+            Norm_min += mins[0]
+            Norm_max += maxes[0]
+        Norm_min = Norm + Norm_min/len(spectrum_files)
+        Norm_max = Norm + Norm_max/len(spectrum_files)
+
     f = get_fit_results()
     reduced_chi_sq = f.rstat
     #---------Set up Flux Calculation----
     #print('Flux Calculations')
-    #flux_calculation = sample_flux(get_model_component('apec1'), 0.01, 50.0, num=1000, confidence=90)[0]
-    Flux = 0#flux_calculation[0]
-    Flux_min = 0#flux_calculation[1]
-    Flux_max = 0#flux_calculation[2]
+    flux_calculation = sample_flux(get_model_component('apec1'), 0.01, 50.0, num=1000, confidence=68)[0]
+    Flux = flux_calculation[0]
+    Flux_min = flux_calculation[1]
+    Flux_max = flux_calculation[2]
     reset(get_model())
     reset(get_source())
     clean()
@@ -157,20 +227,19 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,temp_guess,grouping,sp
 #---------------------------------------------------------#
 def fit_loop(dir,bin_spec_dir,file_name,redshift,n_H,temp_guess,grouping,plot_dir,base_directory,i):
     """
-    Loop for fitting spectra.
+    Loop for fitting spectra. This will simply call the FitXSPEC function and write out the results to a temporary file
+
     Args:
-        base_directory: Path to main Directory
-        dir: ObsID
-        file_name: Root name of PI/PHA file
-        num_files: Number of spatial bins
-        redshift: Redshift of cluster
-        n_H: Column density
-        temp_guess: Initial temperature guess
-        output_file: Text file containing each bin's spectral fit information
         bin_spec_dir: Path to extracted spectra for each bin within an ObsID
-        grouping: Number of counts to bin in sherpa fit
-        i: Bin number
-        plot_dir: Path to plots
+        dir (str): ObsID
+        file_name (str): Root name of PI/PHA file
+        redshift (float): Cosmological Redshift of Object
+        n_H (float): Column Density in direction of object -- units of 10^{-22} cm^{-2}
+        Temp_guess (float): Estimate of Temperature Value
+        grouping (int): Number of counts per bin (i.e. 5)
+        plot_dir (str): Path to plots
+        base_directory (str): Path to main Directory
+        i (int): Relative spectrum number
 
     Return:
         None

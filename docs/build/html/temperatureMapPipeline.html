@@ -83,7 +83,10 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Temperature Map</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Temperature Map</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#documentation-of-individual-routines">Documentation of Individual Routines:</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#module-TemperatureMapPipeline.Fits">Fitting routines</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-TemperatureMapPipeline.Plots">Plotting routines</a></li>
 </ul>
@@ -155,8 +158,27 @@
             
   <div class="section" id="temperature-map">
 <span id="temperature-map-pipeline"></span><h1>Temperature Map<a class="headerlink" href="#temperature-map" title="Permalink to this headline">¶</a></h1>
+<p>This program will results in:</p>
+<ul class="simple">
+<li><p>A Weighted Voronoi Tessellation Map</p></li>
+<li><p>Spectra for each bin</p></li>
+<li><p>Temperature and Abundance Maps</p></li>
+<li><p>Hardness Maps</p></li>
+</ul>
+<p>In order to run this program you need the following:</p>
+<blockquote>
+<div><p>1. Reprocessed Chandra ObsIDs –&gt; you also need to merge them (merge_obs)
+Fits image of region of interest created from merged Observations</p>
+<ol class="arabic simple" start="2">
+<li><p>To run the program please supply those items (and other relevant info) in an input file (see Inputs folder for examples) and execute the following command:</p></li>
+</ol>
+<p><cite>python Temperature_Maps.py Inputs/example.i</cite></p>
+</div></blockquote>
 <div class="toctree-wrapper compound">
 </div>
+</div>
+<div class="section" id="documentation-of-individual-routines">
+<h1>Documentation of Individual Routines:<a class="headerlink" href="#documentation-of-individual-routines" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="module-TemperatureMapPipeline.Fits">
 <span id="fitting-routines"></span><h2>Fitting routines<a class="headerlink" href="#module-TemperatureMapPipeline.Fits" title="Permalink to this headline">¶</a></h2>
 <dl class="simple">
@@ -169,6 +191,55 @@ temperature and reduced chi-squared</p>
 <dt>ADDITIONAL NOTES:</dt><dd><p>Be sure to run heainit first</p>
 </dd>
 </dl>
+<dl class="py function">
+<dt id="TemperatureMapPipeline.Fits.FitXSPEC">
+<code class="sig-prename descclassname">TemperatureMapPipeline.Fits.</code><code class="sig-name descname">FitXSPEC</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spectrum_files</span></em>, <em class="sig-param"><span class="n">background_files</span></em>, <em class="sig-param"><span class="n">redshift</span></em>, <em class="sig-param"><span class="n">n_H</span></em>, <em class="sig-param"><span class="n">temp_guess</span></em>, <em class="sig-param"><span class="n">grouping</span></em>, <em class="sig-param"><span class="n">spec_count</span></em>, <em class="sig-param"><span class="n">plot_dir</span></em>, <em class="sig-param"><span class="n">errors</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TemperatureMapPipeline.Fits.FitXSPEC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit observations simultaneously using models defined in obsid_set().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spectrum_files</strong> (<em>list</em>) – List of spectrum files (i.e. [‘obs1.pi’, ‘obs2.pi’])</p></li>
+<li><p><strong>background_files</strong> (<em>list</em>) – List of background files (i.e. [‘obs1_bkg.pi’, ‘obs2_bkg.pi’])</p></li>
+<li><p><strong>redshift</strong> (<em>float</em>) – Cosmological Redshift of Object</p></li>
+<li><p><strong>n_H</strong> (<em>float</em>) – Column Density in direction of object – units of 10^{-22} cm^{-2}</p></li>
+<li><p><strong>Temp_guess</strong> (<em>float</em>) – Estimate of Temperature Value</p></li>
+<li><p><strong>grouping</strong> (<em>int</em>) – Number of counts per bin (i.e. 5)</p></li>
+<li><p><strong>spec_count</strong> (<em>int</em>) – Local number of spectra with reference to the total number of spectra being fitted</p></li>
+<li><p><strong>plot_dir</strong> (<em>str</em>) – Path to directory containing plots</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Kwargs:</dt><dd><p>errors (bool): Boolean to calculate 1-sigma errors (default=False)</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Fitted Temperature Value in keV
+Temp_min: Minimum Fitted Temperature Value at 1-sigma in keV
+Temp_max: Maximum Fitted Temperature Value at 1-sigma in keV
+Abundance: Fitted Abundance Value in Z_{solar}
+Ab_min: Minimum Fitted Abundance Value at 1-sigma in Z_{solar}
+Ab_max: Maximum Fitted Abundance Value at 1-sigma in Z_{solar}
+Norm: Fitted Normalization Value
+Norm_min: Minimum Fitted Normalization Value at 1-sigma
+norm_max: Maximum Fitted Normalization Value at 1-sigma
+reduced_chi_sq: Reduced Chi Square Value for the Fit
+Flux: Fitted Flux Value in ergs/s/cm^{-2}
+Flux_min: Minimum Flux Value in ergs/s/cm^{-2}
+Flux_max: Maximum Flux Value in ergs/s/cm^{-2}</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Temperature</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the fits are taking too long, set errors=False. The min and max value will just be copies of the fitted value.</p>
+<p>Flux errors are always calculated</p>
+</div>
+</dd></dl>
+
 <dl class="py function">
 <dt id="TemperatureMapPipeline.Fits.Fitting">
 <code class="sig-prename descclassname">TemperatureMapPipeline.Fits.</code><code class="sig-name descname">Fitting</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">base_directory</span></em>, <em class="sig-param"><span class="n">dir</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">num_files</span></em>, <em class="sig-param"><span class="n">redshift</span></em>, <em class="sig-param"><span class="n">n_H</span></em>, <em class="sig-param"><span class="n">temp_guess</span></em>, <em class="sig-param"><span class="n">output_file</span></em>, <em class="sig-param"><span class="n">bin_spec_dir</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TemperatureMapPipeline.Fits.Fitting" title="Permalink to this definition">¶</a></dt>
@@ -201,22 +272,24 @@ fit information for each bin
 <dl class="py function">
 <dt id="TemperatureMapPipeline.Fits.fit_loop">
 <code class="sig-prename descclassname">TemperatureMapPipeline.Fits.</code><code class="sig-name descname">fit_loop</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dir</span></em>, <em class="sig-param"><span class="n">bin_spec_dir</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">redshift</span></em>, <em class="sig-param"><span class="n">n_H</span></em>, <em class="sig-param"><span class="n">temp_guess</span></em>, <em class="sig-param"><span class="n">grouping</span></em>, <em class="sig-param"><span class="n">plot_dir</span></em>, <em class="sig-param"><span class="n">base_directory</span></em>, <em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TemperatureMapPipeline.Fits.fit_loop" title="Permalink to this definition">¶</a></dt>
-<dd><p>Loop for fitting spectra.
-:param base_directory: Path to main Directory
-:param dir: ObsID
-:param file_name: Root name of PI/PHA file
-:param num_files: Number of spatial bins
-:param redshift: Redshift of cluster
-:param n_H: Column density
-:param temp_guess: Initial temperature guess
-:param output_file: Text file containing each bin’s spectral fit information
-:param bin_spec_dir: Path to extracted spectra for each bin within an ObsID
-:param grouping: Number of counts to bin in sherpa fit
-:param i: Bin number
-:param plot_dir: Path to plots</p>
+<dd><p>Loop for fitting spectra. This will simply call the FitXSPEC function and write out the results to a temporary file</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>None</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bin_spec_dir</strong> – Path to extracted spectra for each bin within an ObsID</p></li>
+<li><p><strong>dir</strong> (<em>str</em>) – ObsID</p></li>
+<li><p><strong>file_name</strong> (<em>str</em>) – Root name of PI/PHA file</p></li>
+<li><p><strong>redshift</strong> (<em>float</em>) – Cosmological Redshift of Object</p></li>
+<li><p><strong>n_H</strong> (<em>float</em>) – Column Density in direction of object – units of 10^{-22} cm^{-2}</p></li>
+<li><p><strong>Temp_guess</strong> (<em>float</em>) – Estimate of Temperature Value</p></li>
+<li><p><strong>grouping</strong> (<em>int</em>) – Number of counts per bin (i.e. 5)</p></li>
+<li><p><strong>plot_dir</strong> (<em>str</em>) – Path to plots</p></li>
+<li><p><strong>base_directory</strong> (<em>str</em>) – Path to main Directory</p></li>
+<li><p><strong>i</strong> (<em>int</em>) – Relative spectrum number</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -225,10 +298,30 @@ fit information for each bin
 <dt id="TemperatureMapPipeline.Fits.obsid_set">
 <code class="sig-prename descclassname">TemperatureMapPipeline.Fits.</code><code class="sig-name descname">obsid_set</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">src_model_dict</span></em>, <em class="sig-param"><span class="n">bkg_model_dict</span></em>, <em class="sig-param"><span class="n">obsid</span></em>, <em class="sig-param"><span class="n">bkg_spec</span></em>, <em class="sig-param"><span class="n">obs_count</span></em>, <em class="sig-param"><span class="n">redshift</span></em>, <em class="sig-param"><span class="n">nH_val</span></em>, <em class="sig-param"><span class="n">Temp_guess</span></em><span class="sig-paren">)</span><a class="headerlink" href="#TemperatureMapPipeline.Fits.obsid_set" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the observations’ model using an absorbed apec model. Each observation will be tied
-with the other to allow simultaneous fitting. Additionally, we apply a standard background model.</p>
+with the other to allow simultaneous fitting.</p>
+<p>We additionally apply a background model.</p>
+<dl class="simple">
+<dt>It contains two (frozen) thermal emission pieces:</dt><dd><ol class="arabic simple">
+<li><p>unabsorbed apec model with kT=0.18 keV</p></li>
+<li><p>absorbed bremmstrahlung emission with kT=40 keV</p></li>
+</ol>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>src_model_dict</strong> (<em>dict</em>) – Dictionary of source models created in Fit_Xspec</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>src_model_dict</strong> (<em>dict</em>) – Dictionary of source models – Created in FitXSPEC()</p></li>
+<li><p><strong>bkg_model_dict</strong> (<em>dict</em>) – Dictionary of background models – Created in FitXSPEC()</p></li>
+<li><p><strong>obsid</strong> (<em>str</em>) – Current Chandra ObsID</p></li>
+<li><p><strong>bkg_spec</strong> (<em>str</em>) – Background file corresponding to ObsID</p></li>
+<li><p><strong>obs_ct</strong> (<em>int</em>) – Relative ObsID number</p></li>
+<li><p><strong>redshift</strong> (<em>float</em>) – Cosmological Redshift of Object</p></li>
+<li><p><strong>nH_val</strong> (<em>float</em>) – Column Density in direction of object – units of 10^{-22} cm^{-2}</p></li>
+<li><p><strong>Temp_guess</strong> (<em>float</em>) – Estimate of Temperature Value</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Updated src_model_dict and bkg_model_dict</p>
 </dd>
 </dl>
 </dd></dl>
