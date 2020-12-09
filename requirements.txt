@@ -1,6 +1,8 @@
 astropy==4.1
 joblib==0.17.0
 numpy==1.19.2
+matplotlib==3.3.2
+tqdm==4.50.2
 sphinx==3.3.1
 sphinx-rtd-theme==0.5.0
 sphinxcontrib-applehelp==1.0.2
