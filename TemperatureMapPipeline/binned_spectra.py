@@ -1,31 +1,18 @@
 '''
-File to create the correctly binned pi files
-This is only important if you are running X-ray data analysis from Chandra
----------------------------------------------------
-Goal: Create binned spectra from Chandra data given
-    the WVT of the pixels
----------------------------------------------------
----------------------------------------------------
-List of Functions (In order of appearance):
-    specextract_run --> Creates PI file for individually binned images
-    split_fits --> Break input fits by WVT bins into single pixel pha files
-    combine_pha --> Combine the single pixel phas into combined spectra based off WVT bins
-    create_spectra --> Main function to create binned spectra
----------------------------------------------------
+Goal:
+Create binned spectra from Chandra data given the WVT map of the pixels
+
 OUTPUTS:
-    -- A combined spectra for each bin as designated by the WVT.
-    -- This is to be used for spectral fitting (we'll that's why I made this program)
-    -- File put in /PathToChandraData/OBSID/repro/binned
----------------------------------------------------
+    - A combined spectra for each bin as designated by the WVT.
+
+    - This is to be used for spectral fitting (we'll that's why I made this program)
+
+    - File put in /PathToChandraData/OBSID/repro/binned
+
 Additional Notes:
     As mentioned, the program was designed to generate combinned-binned-spectra
     so that I could generate temperature maps...
     The program can easily be canabilized for other uses or specifications
----------------------------------------------------
----------------------------------------------------
-Carter Rhea
-carterrhea93@gmail.com
-https://carterhea93.com
 '''
 import numpy as np
 import os
@@ -87,6 +74,20 @@ def get_filenames(dir):
 #       outfile_from_convert = pha outroot in string format
 #       output_dir = directory for output file
 def specextract_run(obsid,filenames,file_to_convert,outfile_from_convert,output_dir,bin_number):
+    """
+    Execute specectract command with designated parameters. Grouping is set to 1 count per bin.
+
+    Args:
+        obsid (str): ObsID
+        filenames (str): List of relavent files for given ObsID -- contains badpixel file, evt1, evt2, ...
+        file_to_convert (str): Initial Level 2 file
+        outfile_from_convert (str): Name of extracted spectrum
+        output_dir (str): Directory for extracted spectrum
+        bin_num (int): Relative number of the bin wrt WVT numbering system
+
+    Returns:
+        Creates extracted spectrum from WVT bin region
+    """
     specextract.punlearn()
     specextract.infile = file_to_convert+"[sky=region("+str(output_dir)+str(bin_number)+"temp.reg)]" #1 to make sure we have enough space. serious overkill!
     specextract.outroot = outfile_from_convert
@@ -107,6 +108,13 @@ def specextract_run(obsid,filenames,file_to_convert,outfile_from_convert,output_
 #       output_dir = output directory
 #       reigons = list of regions to add
 def create_reg(output_dir,regions):
+    """
+    Create temporary region file in ds9 format
+
+    Args:
+        output_dir (str): Output directory
+        reigons (str): List of regions to add
+    """
     #Create temporary reg file for split
     print(str(output_dir)+str(bin_number)+"temp.reg")
     with open(str(output_dir)+str(bin_number)+"temp.reg","w+") as file:
@@ -126,6 +134,17 @@ def create_reg(output_dir,regions):
 #   parameters:
 #
 def create_evt(file_to_split,bin_number,output_dir):
+    """
+    Create temporary event file
+
+    Args:
+        file_to_split (str): Name of file to be split
+        bin_number (int): Relative number of the bin wrt WVT numbering system
+        output_dir (str): Path to output directory
+
+    Returns:
+        A copy of the temporary event file
+    """
     dmcopy.punlearn()
     dmcopy.infile = file_to_split+'.fits[sky=region('+output_dir+str(bin_number)+'temp.reg)]'
     dmcopy.outfile = output_dir+'bin_'+str(bin_number)+'.fits'
@@ -136,6 +155,19 @@ def create_evt(file_to_split,bin_number,output_dir):
 # Combine individuals pixels into larger boxes to
 # reduce spexectract time.
 def create_reg_comb(pix_in_bin,file_to_split,bin_number,output_dir):
+    """
+    Function to concatenate pixels in a bin together in order to reduce calculation time.
+
+    Args:
+        pix_in_bin (int): List of pixels in bin
+        file_to_split (str): Name of event file
+        bin_number (int): Relative number of the bin wrt WVT numbering system
+        output_dir (str): Path to output directory
+
+    Returns:
+        Temporary ds9 file with concatenated pixels in bin that will be used to extract spectrum rapidly
+
+    """
     points = {} #(x,[y]) pairs
     for pixel in pix_in_bin:
         if pixel.pix_x not in points.keys():
@@ -226,8 +258,20 @@ def create_reg_comb(pix_in_bin,file_to_split,bin_number,output_dir):
 #       width = width of pixel in sky coordinates
 #       height = height of pixel in sky coordinates
 #       pix_in_bin_num = pixel number relative to bin (0-max(bin.pixels))
-#       bin_number = As suspected its the bin number :):):)
+#       bin_number = Relative number of the bin wrt WVT numbering system
 def split_fits(obsid,filenames,file_to_split,output_file,output_dir,pix_in_bin_num,bin_number):
+    """
+    Create spectra from initial bin regions
+
+    Args:
+        obsid (str): Current ObsID
+        filenames (str): List of files necessary for specextract
+        file_to_split (str): Fits file in string format
+        output_file (str): Directory for output
+        output_dir (str): Pha outroot in string format
+        pix_in_bin_num (int): pixel number relative to bin (0-max(bin.pixels))
+        bin_number (int): Relative number of the bin wrt WVT numbering system
+    """
     output =  output_file+"_"+str(bin_number)+"_"
     regions = []
     file_to_convert = file_to_split+'.fits'
@@ -243,6 +287,21 @@ def split_fits(obsid,filenames,file_to_split,output_file,output_dir,pix_in_bin_n
 #       pixel_y  = pixels y coordinate in image coordinates
 #       file_to_split = file which we will split later (needed to get new coordinates)
 def coord_trans(pixel_x,pixel_y,file_to_split):
+    """
+    Translate image (logical) coordinates into physical (sky) coordinates
+
+    Args:
+        pixel_x (float): x coordinate in image coordinates
+        pixel_y (float): y coordinate in image coordinates
+        file_to_split (str): Name of event file
+
+    Returns:
+        x_center (float): x coordinate in physical coordinates
+        y_center (float): y coordinate in physical coordinates
+        ra (float): RA in degrees
+        dec (float): DEC in degrees
+    """
+
     tr = SimpleCoordTransform(file_to_split+'.img')
     x_center,y_center = tr.convert("image", "physical", pixel_x, pixel_y)
     dmcoords.punlearn()
@@ -259,10 +318,14 @@ def source_fits(filenames, source_file, obsid):
     '''
     Create fits and image file for primary source region in reprocessed Directory
     Also create blanksky file
-    :params
-    : filenames: dictionary containing evt2 file
-    : source_file: source region name without extension
-    : obsid: Chandra Observation ID
+
+    Args:
+        filenames (str): dictionary containing evt2 file
+        source_file (str): source region name without extension
+        obsid (str): Chandra Observation ID
+
+    Returns:
+        Creates image file and blanksky file
     '''
     dmcopy.punlearn()
     dmcopy.infile = filenames['evt2']+'[sky=region('+source_file+'.reg)]'
@@ -304,6 +367,22 @@ def spec_loop(obsid,filenames,file_to_split,output_file,output_dir,directory_rep
 #       file_to_split = Name of file to split in repro directory
 #       output_dir = Output path for binned files
 def create_spectra(base_directory,filename,OBSIDS,source_file,output_dir,wvt_output):
+    """
+    Wrapper function to create spectra for each bin in the WVT map
+
+    Args:
+        base_directory (str): Directory containing Chandra data
+        filename (str): Name of file to read in WVT bin data
+        dir (str): Directory for Chandra OBSID
+        file_to_split (str): Name of file to split in repro directory
+        output_dir (str): Output path for binned files
+
+    Returns:
+        Individual spectrum files (.pi) for source and background in each WVT bin
+
+    Note:
+        This is parallelized to run on 4 cores in order to speed up calculation time
+    """
     print("Starting to bin spectra...")
     for obsid in OBSIDS:
         print("We are on obsid %s"%obsid)

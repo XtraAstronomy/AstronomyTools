@@ -27,22 +27,12 @@ In order to run this program you need the following:
 .. toctree::
    :maxdepth: 2
 
+   tmp-fits
+   tmp-plots
+   tmp-bins
 
 
 
 
 
 
-
-Documentation of Individual Routines:
--------------------------------------
-
-Fitting routines
-^^^^^^^^^^^^^^^^
-.. automodule:: TemperatureMapPipeline.Fits
-    :members:
-
-Plotting routines
-^^^^^^^^^^^^^^^^^
-.. automodule:: TemperatureMapPipeline.Plots
-    :members:

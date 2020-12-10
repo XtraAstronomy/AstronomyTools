@@ -15,6 +15,9 @@ num_ticks = 5
 #-------------------------------------------------#
 #-------------------------------------------------#
 class Bin:
+    """
+    Class which contains bin information: bin number, pixels in bin, temperature, reduced chi statistic, and abundance.
+    """
     def __init__(self, number):
         self.bin_number = number
         self.pixels = []
@@ -38,13 +41,24 @@ class Pixel:
         self.pix_y = pix_y
 #-------------------------------------------------#
 #-------------------------------------------------#
-# Plot plot_Bins
-#   parameters:
-#       bin_file - WVT bin data file
-#       temp_file - temperature file created during fits
-#       file_dir - Full Path to location of new image
-#       fileame - name of file to be printed
+
 def plot_Ab(bin_file,temp_file,file_dir,filename,color_map,stn,wcs_image):
+    """
+    Plot the Abundance from Fits and create png and fits image with the following ending:
+    file_dir+'/'+filename+"_"+str(stn)+"_Met.png"
+
+    Args:
+        bin_file (str): WVT bin data file
+        temp_file (str): Temperature file containing fit information
+        file_dir (str): Full path to location of new image (and fits)
+        filename (str): Name of new output file
+        color_map (str): Matplotlib Colormap (default = Viridis)
+        stn (int): Target Signal-to-Noise of WVT bins
+        wcs_image (str): Path to initial image for WCS information (not used for anything else)
+
+    Returns:
+        PNG and FITS image of fitted abundances
+    """
     #Get WCS information from header of original image
     hdu = fits.open(wcs_image)[0]
     wcs = WCS(hdu.header)
@@ -129,13 +143,23 @@ def plot_Ab(bin_file,temp_file,file_dir,filename,color_map,stn,wcs_image):
     return ax
 #-------------------------------------------------#
 #-------------------------------------------------#
-# Plot plot_Bins
-#   parameters:
-#       bin_file - WVT bin data file
-#       temp_file - temperature file created during fits
-#       file_dir - Full Path to location of new image
-#       fileame - name of file to be printed
+
 def plot_Bins(bin_file,temp_file,file_dir,filename,color_map,stn,wcs_image):
+    """Plot the Temperatures from Fits and create png and fits image with the following ending:
+    file_dir+'/'+filename+"_"+str(stn)+"_Met.png"
+
+    Args:
+        bin_file (str): WVT bin data file
+        temp_file (str): Temperature file containing fit information
+        file_dir (str): Full path to location of new image (and fits)
+        filename (str): Name of new output file
+        color_map (str): Matplotlib Colormap (default = Viridis)
+        stn (int): Target Signal-to-Noise of WVT bins
+        wcs_image (str): Path to initial image for WCS information (not used for anything else)
+
+    Returns:
+        PNG and FITS image of fitted temperatures
+    """
     #Get WCS information from header of original image
     hdu = fits.open(wcs_image)[0]
     wcs = WCS(hdu.header)

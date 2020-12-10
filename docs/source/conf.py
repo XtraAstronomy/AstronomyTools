@@ -49,7 +49,7 @@ exclude_patterns = []
 
 
 # -- AUTO IMPORTS -- #
-autodoc_mock_imports = ['sherpa', 'cv2', 'read_input']
+autodoc_mock_imports = ['sherpa', 'cv2', 'read_input', 'ciao_contrib', 'crates_contrib']
 
 # -- Options for HTML output -------------------------------------------------
 
