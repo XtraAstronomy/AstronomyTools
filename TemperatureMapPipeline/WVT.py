@@ -1,53 +1,3 @@
-'''
-DEFINE INPUTS IN MAIN FUNCTION AT END OF FILE
-This file will create a WVT map given a set of pixels (x and y coordinates) and
-a weight. This is specifically written for X-Ray spectroscopy, but could be easily
-canabilized for any other application necessitating WVT.
----------------------------------------------------
----------------------------------------------------
-Inputs:
-    image_fits - Name of Image Fits File (e.g. "simple_image.fits")
-    exposure_map - Name of exposure map -- optional -- (e.g. 'flux_broad.expmap')
-    stn_target - Target Signal-to-Noise (e.g. 50)
-    pixel_size - Pixel radius in degrees (e.g. 0.492 for CHANDRA AXIS I)
-    tol - tolerance Level (e.g. 1e-16)
-    roundness_crit - Critical Value Describing Roundness of Bin (e.g. 0.3)
-    home_dir - Full Path to Home Directory (e.g. '/home/user/Documents/ChandraData/12833/repro')
-    image_dir - Full Path to Image Directory (e.g. '/home/user/Desktop')
-    output_dir - Full Path to Output Directory (e.g. '/home/user/Documents/ChandraData/12833')
----------------------------------------------------
-List of Functions (In order of appearance):
-    plot_Bins --> Plot bins with five alternating color schemes
-    plot_Bins_SN --> Plot bins with color based of Signal-to-Noise value
-    read_in --> Read in flux file and gather flux information
-    Nearest_Neighbors --> Calculate nearest neighbors using builtin sklearn algorithm
-    dist --> Calculates Euclidean distances
-    closest_node --> Calculates closest node to bin centroid
-    adjacency --> Determines if pixels are adjacent (diagonals don't count)
-    Roundness --> Calculates roundness parameter of bin
-    Potential_SN --> Calculates Potential New Signal-to-Noise if pixel is added
-    Bin_data --> Creates data for Chandra with only unique pixels from read_in
-    bin_num_pixel --> Calculates bixel's associated bin (i.e. in which bin is my pixel??)
-    assigned_missing_pixels --> Assign pixels which weren't read in due to 0 Signal-to-Noise
-    Bin_Acc --> Perform Bin Accretion Algorithm
-    converged_met --> Check that all bins have converged in WVT
-    Rebin_Pixels --> Rebin pixels in WVT algorithm
-    WVT --> Perform Weighted Voronoi Tessellation Algorithm
----------------------------------------------------
-Outputs:
-    -- Creates bin plots for bin accretion and WVT algorithms
-    -- Creates text files for each bin containing chip information and bin number
-                    pixel (x,y) are CENTER coordinates!
----------------------------------------------------
-TO DO:
-
----------------------------------------------------
----------------------------------------------------
-Carter Rhea
-https://carterrhea.com
-carterrhea93@gmail.com
-'''
-
 #-----------------INPUTS--------------------------#
 import os
 import sys
@@ -61,19 +11,24 @@ import matplotlib as mpl
 from read_input import read_input_file
 #-------------------------------------------------#
 #-------------------------------------------------#
-#-------------------------------------------------#
-#-------------------------------------------------#
-# Plot Bins
-#   parameters:
-#       Bin - list of bin objects
-#       x_min - minimum x value of pixel
-#       x_max - maximum x value of pixel
-#       y_min - minimum y value of pixel
-#       x_max - maximum y value of pixel
-#       stn_target - target signal-to-noise value
-#       file_dir - Full Path to location of new image
-#       fileame - name of file to be printed
+
 def plot_Bins(Bins,x_min,x_max,y_min,y_max,stn_target,file_dir,filename):
+    """
+    Plot the WVT bins in the image. The bins will be randomly colored.
+
+    Args:
+        Bin (list): List of bin objects
+        x_min (float): Minimum x-value of pixel
+        x_max (float): Maximum x-value of pixel
+        y_min (float): Minimum y-value of pixel
+        y_max (float): Maximum y-value of pixel
+        stn_target: Target signal-to-noise value
+        file_dir (str): Full path to location of new image
+        filename (str): Name of file to be made
+
+    Returns:
+        Creates Histogram of SNRs and a PNG of the WVT map
+    """
     # Set everything up for the plotting...
     fig = plt.figure()
     ax = plt.axes(xlim=(x_min,x_max), ylim=(y_min,y_max))
@@ -152,18 +107,24 @@ def plot_Bins(Bins,x_min,x_max,y_min,y_max,stn_target,file_dir,filename):
     plt.savefig(file_dir+'/'+filename+"_scatter.png", bbox_inches="tight")
     plt.clf()
     return None
-#-------------------------------------------------#
-#-------------------------------------------------#
-# Plot plot_Bins_SN
-#   parameters:
-#       Bin - list of bin objects
-#       x_min - minimum x value of pixel
-#       x_max - maximum x value of pixel
-#       y_min - minimum y value of pixel
-#       x_max - maximum y value of pixel
-#       file_dir - Full Path to location of new image
-#       fileame - name of file to be printed
+
 def plot_Bins_SN(Bins,x_min,x_max,y_min,y_max,file_dir,filename):
+    """
+       Plot the Normalized Signal to Noise Map
+
+       Args:
+           Bin (list): List of bin objects
+           x_min (float): Minimum x-value of pixel
+           x_max (float): Maximum x-value of pixel
+           y_min (float): Minimum y-value of pixel
+           y_max (float): Maximum y-value of pixel
+           stn_target: Target signal-to-noise value
+           file_dir (str): Full path to location of new image
+           filename (str): Name of file to be made
+
+       Returns:
+           Creates Normalized Signal to Noise Map PNG
+    """
     fig = plt.figure()
     fig.set_size_inches(7, 7)
     ax = plt.axes(xlim=(x_min,x_max), ylim=(y_min,y_max))
@@ -200,12 +161,10 @@ def plot_Bins_SN(Bins,x_min,x_max,y_min,y_max,file_dir,filename):
     plt.savefig(file_dir+'/'+filename+".png")
     plt.clf()
     return None
-#-------------------------------------------------#
-#-------------------------------------------------#
-# Bin Class Information
-# Everything in here should be self-explanatory... if not let me know and I
-# will most happily comment it! :)
+
+
 class Bin:
+
     def __init__(self, number):
         self.bin_number = number
         self.pixels = []
@@ -328,6 +287,18 @@ class Pixel:
 #       image_coord = reg file containing center of box of interest and sizes
 #       exposure_map = exposure map file in string format
 def read_in(image_fits,exposure_map = 'none'):
+    """
+    Read in region image fits and calculate the signal-to-noise of each pixel.  The signal to noise is the sqrt(counts)
+
+    Args:
+        image_fits (str): Path to fits image file
+
+    Kwargs:
+        exposure_map (str): Path to exposure map
+
+    Returns:
+        List of pixel instances
+    """
     #Collect Pixel Data
     hdu_list = fits.open(image_fits, memmap=True)
     exposure_time = float(hdu_list[0].header["TSTOP"]) - float(hdu_list[0].header["TSTART"])
@@ -368,6 +339,15 @@ def read_in(image_fits,exposure_map = 'none'):
 #   parameters:
 #       pixel_list - list of pixel objects
 def Nearest_Neighbors(pixel_list):
+    """
+    Calculate Adjaceny list for each pixel (up to 9 pixels)
+
+    Args:
+        pixel_list (list): List of pixel instances
+
+    Returns:
+        Adds list of nearest neighbors to each pixel instance
+    """
     print("Running Nearest Neighbor Algorithm")
     xvals = []
     yvals = []
@@ -396,8 +376,29 @@ def Nearest_Neighbors(pixel_list):
 #       Bin_current = current bin object
 #       unassigned_pixels - list of indices of unassigned pixels
 def dist(p1x,p1y,p2x,p2y):
+    """
+    Calculate distance between pixels
+
+    Args:
+        p1x (float): X-coordinate of pixel 1
+        p1y (float): Y-coordinate of pixel 1
+        p2x (float): X-coordinate of pixel 2
+        p2y (float): Y-coordinate of pixel 2
+
+    Returns:
+        Euclidean distance between pixel 1 and pixel 2
+    """
     return np.sqrt((p1x-p2x)**2+(p1y-p2y)**2)
+
+
 def closest_node(Bin_current,unassigned_pixels):
+    """
+    Calculate the closed pixel in a bin for a pixel that has not yet been assigned to a bin
+
+    Args:
+        Bin_current (bin): Current bin
+        unassigned_pixels (list): List of unnassigned pixels
+    """
     closest_val = 1e16 #just some big number
     p1x = Bin_current.centroidx[0]
     p1y = Bin_current.centroidy[0]

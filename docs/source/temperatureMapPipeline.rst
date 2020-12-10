@@ -30,6 +30,7 @@ In order to run this program you need the following:
    tmp-fits
    tmp-plots
    tmp-bins
+   tmp-wvt
 
 
 
