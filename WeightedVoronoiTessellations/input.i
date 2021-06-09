@@ -5,7 +5,7 @@ image_fits = broad_flux.img
 # Exposure Map File (Default none)
 exposure_map = none
 # Signal-to-Noise Target Ratio
-StN_Target = 30
+stn_target = 30
 # Pixel size in arcsec (0.5 for Chandra)
 pixel_radius = 0.5
 # Tolerance for best fit value (Default 1e-2)

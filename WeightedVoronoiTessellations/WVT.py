@@ -729,3 +729,8 @@ def wvt_main(inputs):
     #plot_Bins_SN(Final_Bins,min_x,max_x,min_y,max_y,inputs['image_dir'],"WVT_SN")
     Bin_data(Final_Bins,Pixels,min_x,min_y,inputs['output_dir'],"WVT_data")
     print("#----------------Information Stored--------------#")
+
+inputs = read_input_file(sys.argv[1])
+print(inputs)
+#----------------------------------------------------WVT---------------------------------------------------#
+wvt_main(inputs)
