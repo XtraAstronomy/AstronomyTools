@@ -13,18 +13,25 @@ def bkg_clean_srcs(bkg_ccd):
     '''
     Remove any pt sources from the background CCD
     '''
-    vtpdetect.punlearn()
-    vtpdetect.infile = bkg_ccd+'.fits'
-    vtpdetect.outfile = bkg_ccd+'_src.fits'
-    vtpdetect.regfile = bkg_ccd+'_src.reg'
-    vtpdetect.clobber = True
-    vtpdetect()
+    try:
+        vtpdetect.punlearn()
+        vtpdetect.infile = bkg_ccd+'.fits'
+        vtpdetect.outfile = bkg_ccd+'_src.fits'
+        vtpdetect.regfile = bkg_ccd+'_src.reg'
+        vtpdetect.clobber = True
+        vtpdetect()
 
-    dmcopy.punlearn()
-    dmcopy.infile = bkg_ccd+'.fits[exclude sky=region('+bkg_ccd+'_src.reg)]'
-    dmcopy.outfile = bkg_ccd+'_bkg.fits'
-    dmcopy.clobber = True
-    dmcopy()
+        dmcopy.punlearn()
+        dmcopy.infile = bkg_ccd+'.fits[exclude sky=region('+bkg_ccd+'_src.reg)]'
+        dmcopy.outfile = bkg_ccd+'_bkg.fits'
+        dmcopy.clobber = True
+        dmcopy()
+    except OSError:
+        dmcopy.punlearn()
+        dmcopy.infile = bkg_ccd+'.fits'
+        dmcopy.outfile = bkg_ccd+'_bkg.fits'
+        dmcopy.clobber = True
+        dmcopy()
 
     return None
 
