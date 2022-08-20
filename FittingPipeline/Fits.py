@@ -57,12 +57,13 @@ def isFloat(string):
 def obsid_set(src_model_dict,bkg_model_dict,obsid,bkg_src, obs_count,redshift,nH_val,Temp_guess):
     '''
     Function to set the source and background model for the observation
-    :Params
-    :src_model_dict : Dictionary of all the source models set for particular region
-    :bkg_model_dict : Dido except for the background models
-    :obsid : The source pha/pi file
-    :bkg_src : The background pha/pi file
-    :obs_count : The count of the current observation
+    
+    Args: 
+        src_model_dict : Dictionary of all the source models set for particular region
+        bkg_model_dict : Dido except for the background models
+        obsid : The source pha/pi file
+        bkg_src : The background pha/pi file
+        obs_count : The count of the current observation
 
     '''
     load_pha(obs_count,obsid,use_errors=True) #Read in
@@ -96,6 +97,7 @@ def obsid_set(src_model_dict,bkg_model_dict,obsid,bkg_src, obs_count,redshift,nH
 def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,spec_count,plot_dir):
     """
     Function to fit spectra using sherpa and XSPEC
+
     Args:
         spectrum_files: List of spectrum files for each ObsID
         background_files: List of background files for each ObsID
@@ -105,6 +107,7 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,sp
         grouping: Number of counts to bin in sherpa fit
         spec_count: Bin number
         plot_dir: Path to plot directory
+
     Return:
         Spectral fit parameters and their errors
     """
@@ -177,6 +180,7 @@ def Fitting(base_directory,dir,file_name,num_files,redshift,n_H,Temp_guess,outpu
     """
     Fit each region's spectra and create a text file containing the spectral
     fit information for each bin
+
     Args:
         base_directory: Path to main Directory
         dir: ObsID
@@ -209,8 +213,6 @@ def Fitting(base_directory,dir,file_name,num_files,redshift,n_H,Temp_guess,outpu
         print("Fitting model to spectrum number "+str(i+1))
         spectrum_files = []
         background_files = []
-        arf_files = []
-        resp_file = []
         for directory in dir:
             try:
                 if num_files == 1:  # Are we fitting multiple files or not?
@@ -220,6 +222,7 @@ def Fitting(base_directory,dir,file_name,num_files,redshift,n_H,Temp_guess,outpu
                     spectrum_files.append(directory+'/repro/'+file_name+'_'+str(i)+".pi")
                     background_files.append(directory+'/repro/'+file_name+'_'+str(i)+"_bkg.pi")
             except:
+                print('Error: The spectra files for region %i were not found!!!'%i)
                 pass
         try:
             Temperature,Temp_min,Temp_max,Abundance,Ab_min,Ab_max,Norm,Norm_min,Norm_max,reduced_chi_sq,Flux = FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,i,plot_dir)

@@ -16,4 +16,5 @@ Temp_Guess = 2.0
 #----------CHOICES---------------#
 extract_spectrum = False
 fit_spec = True
+deproj = False
 plot = True
