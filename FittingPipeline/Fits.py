@@ -57,8 +57,8 @@ def isFloat(string):
 def obsid_set(src_model_dict,bkg_model_dict,obsid,bkg_src, obs_count,redshift,nH_val,Temp_guess):
     '''
     Function to set the source and background model for the observation
-    
-    Args: 
+
+    Args:
         src_model_dict : Dictionary of all the source models set for particular region
         bkg_model_dict : Dido except for the background models
         obsid : The source pha/pi file
@@ -86,7 +86,7 @@ def obsid_set(src_model_dict,bkg_model_dict,obsid,bkg_src, obs_count,redshift,nH
     bkg_model_dict[obsid] = xsapec('bkgApec'+str(obs_count))+get_model_component('abs1')*xsbremss('brem'+str(obs_count))
     set_bkg_model(obs_count,bkg_model_dict[obsid])
     #Change bkg model component values
-    et_model_component('bkgApec' + str(obs_count)).kT = 0.18
+    get_model_component('bkgApec' + str(obs_count)).kT = 0.18
     freeze(get_model_component('bkgApec'+str(obs_count)).kT)
     get_model_component('brem' + str(obs_count)).kT = 40.0
     freeze(get_model_component('brem' + str(obs_count)).kT)
@@ -120,13 +120,13 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,sp
         obsid_set(src_model_dict, bkg_model_dict, spec_pha,background_files[int(obs_count-1)], obs_count, redshift, n_H, Temp_guess)
         obs_count += 1
     for ob_num in range(obs_count-1):
-        if deproj == False:
-            group_counts(ob_num+1,grouping)
+        group_counts(ob_num+1,grouping)
         notice_id(ob_num+1,0.5,8.0)
     fit()
-    set_log_sherpa()
-    set_covar_opt("sigma",1)
-    covar(get_model_component('apec1').kT,get_model_component('apec1').Abundanc)
+    #set_log_sherpa()
+    #set_covar_opt("sigma",1)
+    covar(1)#get_model_component('apec1').kT,get_model_component('apec1').Abundanc)
+    #print(get_covar_results())
     mins = list(get_covar_results().parmins)
     maxes = list(get_covar_results().parmaxes)
     for val in range(len(mins)):
@@ -137,12 +137,12 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,sp
         else:
             pass
     #Get important values
-    Temperature = apec1.kT.val
-    Temp_min = Temperature+mins[0]
-    Temp_max = Temperature+maxes[0]
-    Abundance = apec1.Abundanc.val
-    Ab_min = Abundance+mins[1]
-    Ab_max = Abundance+maxes[1]
+    Temperature = float(apec1.kT.val)
+    Temp_min = float(Temperature+mins[0])
+    Temp_max = float(Temperature+maxes[0])
+    Abundance = float(apec1.Abundanc.val)
+    Ab_min = float(Abundance+mins[1])
+    Ab_max = float(Abundance+maxes[1])
     #Calculate norm as average value
     Norm = 0; Norm_min = 0; Norm_max = 0
     Norm += get_model_component('apec1').norm.val #add up values
@@ -159,16 +159,16 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,sp
             pass
         Norm_min += mins[0]
         Norm_max += maxes[0]
-    Norm = Norm/len(spectrum_files)
-    Norm_min = Norm+Norm_min/len(spectrum_files)
-    Norm_max = Norm+Norm_max/len(spectrum_files)
+    Norm = float(Norm/len(spectrum_files))
+    Norm_min = float(Norm+Norm_min/len(spectrum_files))
+    Norm_max = float(Norm+Norm_max/len(spectrum_files))
     f = get_fit_results()
-    reduced_chi_sq = f.rstat
+    reduced_chi_sq = float(f.rstat)
     #---------Set up Flux Calculation----------#
-    flux_calculation = sample_flux(get_model_component('apec1'), 0.01, 50.0, num=1000, confidence=90)[0]
-    Flux = flux_calculation[0]
-    Flux_min = flux_calculation[1]
-    Flux_max = flux_calculation[2]
+    flux_calculation = sample_flux(get_model_component('apec1'), 0.01, 50.0, num=100, confidence=68)[0]
+    Flux = float(flux_calculation[0])
+    Flux_min = float(flux_calculation[1])
+    Flux_max = float(flux_calculation[2])
     reset(get_model())
     reset(get_source())
     clean()
@@ -190,7 +190,6 @@ def Fitting(base_directory,dir,file_name,num_files,redshift,n_H,Temp_guess,outpu
         n_H: Column density
         temp_guess: Initial temperature guess
         output_file: Text file containing each bin's spectral fit information
-        bin_spec_dir: Path to extracted spectra for each bin within an ObsID
 
     Return:
         None
@@ -214,19 +213,19 @@ def Fitting(base_directory,dir,file_name,num_files,redshift,n_H,Temp_guess,outpu
         spectrum_files = []
         background_files = []
         for directory in dir:
-            try:
+            #try:
                 if num_files == 1:  # Are we fitting multiple files or not?
                     spectrum_files.append(directory+'/repro/'+file_name+".pi")
                     background_files.append(directory+'/repro/'+file_name+"_bkg.pi")
                 else:
-                    spectrum_files.append(directory+'/repro/'+file_name+'_'+str(i)+".pi")
-                    background_files.append(directory+'/repro/'+file_name+'_'+str(i)+"_bkg.pi")
-            except:
-                print('Error: The spectra files for region %i were not found!!!'%i)
-                pass
-        try:
-            Temperature,Temp_min,Temp_max,Abundance,Ab_min,Ab_max,Norm,Norm_min,Norm_max,reduced_chi_sq,Flux = FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,i,plot_dir)
-            file_to_write.write("%i %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E\n"%(i,Temperature,Temp_min,Temp_max,Abundance,Ab_min,Ab_max,Norm,Norm_min,Norm_max,reduced_chi_sq,Flux,Flux_min,Flux_max))
-        except:
-            print("No spectra was fit for bin number %i!"%i)
+                    spectrum_files.append(directory+'/repro/'+file_name+str(i)+".pi")
+                    background_files.append(directory+'/repro/'+file_name+str(i)+"_bkg.pi")
+            #except:
+                #print('Error: The spectra files for region %i were not found!!!'%i)
+                #pass
+        #try:
+        Temperature,Temp_min,Temp_max,Abundance,Ab_min,Ab_max,Norm,Norm_min,Norm_max,reduced_chi_sq,Flux,Flux_min,Flux_max = FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,i,plot_dir)
+        file_to_write.write("%i %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E\n"%(i,Temperature,Temp_min,Temp_max,Abundance,Ab_min,Ab_max,Norm,Norm_min,Norm_max,reduced_chi_sq,Flux,Flux_min,Flux_max))
+        #except:
+        #    print("No spectra was fit for bin number %i!"%i)
     file_to_write.close()

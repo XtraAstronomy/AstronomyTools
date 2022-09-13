@@ -38,3 +38,8 @@ What does the program do?
 **Q:** What kind of model is fit?
 
 **A:** We fit an absorbed thermal model to the spectrum: `phabs*apec`. However, you can easily change this in the fitting routines. Our background model has two components: `apec + phabs*brem`. This model was taken from McDonald et al. 2010 (need to add citation). Again, this can easily be changed :)
+
+
+**Q:** How do I make the annuli regions?
+
+**A:** We suggest using `ds9` to create the region file containing the annuli. This can be done by selecting the annulus region, and creating the annuli by following the standard methodology. Doing it this way will create 1 file containing all the regions; however, we want a file for each region. To break up this file, just use the `BreakAnnuli.py` code provided (after updating the input in the file). After running this, you should be all good to go!

@@ -22,7 +22,6 @@ base = inputs['base_dir']+inputs['Name']
 num_bins = int(inputs['num_files'])
 #----------------------------------------------------SPECTRA---------------------------------------------------#
 if inputs['extract_spectrum'].lower() == 'true':
-
     for reg_file_ct in tqdm(np.arange(num_bins)):
         reg_file = inputs['reg_file_prefix']+str(reg_file_ct)
         # For each region extract the spectra in each ObsID
@@ -33,8 +32,9 @@ if inputs['fit_spec'].lower() == 'true':
         # Deprojection
         Fitting_Deprojected(inputs['base_dir']+'/'+inputs['Name'],inputs['ObsIDs'],inputs['reg_file_prefix'],int(num_bins),inputs['redshift'],inputs['n_H'],inputs['Temp_Guess'],inputs['Temp_data'],base+'/regions/', inputs['reg_file_prefix'], num_bins)
     # Not Deprojected
-    Fitting(inputs['base_dir']+'/'+inputs['Name'],inputs['ObsIDs'],inputs['reg_file_prefix'],int(num_bins),inputs['redshift'],inputs['n_H'],inputs['Temp_Guess'],inputs['Temp_data'],base+'/regions/')
+    Fitting(inputs['base_dir']+'/'+inputs['Name'],inputs['ObsIDs'],inputs['reg_file_prefix'],int(num_bins),inputs['redshift'],inputs['n_H'],inputs['Temp_Guess'],inputs['Temp_data'])
 #-----------------------------------------------PLOT FITS-----------------------------------------------#
 if inputs['plot'].lower() == 'true':
-    plot_data(base+'/'+inputs['Temp_data'],base+'/regions/',inputs['reg_files'],base,'standard',inputs['redshift'])
-    plot_data(base+'/'+inputs['Temp_data'].split('.')[0]+'_deproj.txt',base+'/regions/',inputs['reg_files'],base,'deproj',inputs['redshift'])
+    plot_data(base+'/'+inputs['Temp_data'],base+'/regions/',inputs['reg_file_prefix'], num_bins,base,'standard',inputs['redshift'])
+    if inputs['deproj'] == 'true':
+        plot_data(base+'/'+inputs['Temp_data'].split('.')[0]+'_deproj.txt',base+'/regions/', inputs['reg_file_prefix'], num_bins,base,'deproj',inputs['redshift'])
