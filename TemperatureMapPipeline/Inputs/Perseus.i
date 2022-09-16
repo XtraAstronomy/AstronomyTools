@@ -8,8 +8,8 @@ roundness_crit = 0.3
 WVT_data = WVT_data_source_stn150
 #--------------------------FITTING---------------------------#
 #----------INPUT DATA------------#
-base_dir = /home/carterrhea/Documents/Cluster_Data/Perseus
-Name = 
+base_dir = /mnt/carterrhea/carterrhea/Perseus/Test
+Name =
 ObsIDs = 3209,4289
 source_file = source
 output_dir = binned_source_150/
@@ -20,10 +20,9 @@ redshift = 0.0179
 n_H = 0.137
 Temp_Guess = 2.0
 #----------CHOICES---------------#
-wvt = True
-bin_spec = True
-num_bins = 0
-fit_spec = True
+wvt = False
+bin_spec = False
+num_bins = 542
+fit_spec = False
 plot = True
 Colormap = inferno
-

@@ -24,7 +24,8 @@ if inputs['bin_spec'].lower() == 'false':
     num_bins = inputs['num_bins']
 #-----------------------------------------------FIT SPECTRA-------------------------------------------#
 if inputs['fit_spec'].lower() == 'true':
-    Fitting( inputs['base_dir']+'/'+inputs['Name'],inputs['ObsIDs'],inputs['source_file'],int(num_bins),
+    os.chdir(inputs['base_dir'])
+    Fitting(inputs['base_dir']+'/'+inputs['Name'],inputs['ObsIDs'],inputs['source_file'],int(num_bins),
         inputs['redshift'],inputs['n_H'],inputs['Temp_Guess'],inputs['Temp_data'],inputs['output_dir'])
 #-----------------------------------------------PLOT FITS-----------------------------------------------#
 if inputs['plot'].lower() == 'true':
@@ -32,5 +33,5 @@ if inputs['plot'].lower() == 'true':
         inputs['stn_target'],base+'/'+inputs['source_file']+'.img')
    plot_Ab(base+'/'+inputs['WVT_data']+'.txt',base+'/'+inputs['Temp_data'],base,inputs['Name'],inputs['Colormap'],
        inputs['stn_target'],base+'/'+inputs['source_file']+'.img')
-   hardness_ratio(base,inputs['Name'],inputs['ObsIDs'][0],inputs['stn_target'],num_bins,inputs['output_dir'],inputs['Colormap'],
-        base+'/'+inputs['source_file']+'.fits',base+'/'+inputs['WVT_data']+'.txt')
+   #hardness_ratio(base,inputs['Name'],inputs['ObsIDs'][0],inputs['stn_target'],num_bins,inputs['output_dir'],inputs['Colormap'],
+    #    base+'/'+inputs['source_file']+'.fits',base+'/'+inputs['WVT_data']+'.txt')

@@ -214,10 +214,10 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,temp_guess,grouping,sp
     reduced_chi_sq = f.rstat
     #---------Set up Flux Calculation----
     #print('Flux Calculations')
-    flux_calculation = sample_flux(get_model_component('apec1'), 0.01, 50.0, num=1000, confidence=68)[0]
-    Flux = flux_calculation[0]
-    Flux_min = flux_calculation[1]
-    Flux_max = flux_calculation[2]
+    #flux_calculation = sample_flux(get_model_component('apec1'), 0.01, 50.0, num=1000, confidence=68)[0]
+    Flux = 0#flux_calculation[0]
+    Flux_min = 0#flux_calculation[1]
+    Flux_max = 0#flux_calculation[2]
     reset(get_model())
     reset(get_source())
     clean()
@@ -248,18 +248,21 @@ def fit_loop(dir,bin_spec_dir,file_name,redshift,n_H,temp_guess,grouping,plot_di
     os.chdir(base_directory)
     spectrum_files = []
     background_files = []
+    fit_bool = True
     for directory in dir:  # Step through each ObsID
         try:  # Collect spectrum if it exists
             spectrum_files.append(directory+'/repro/'+bin_spec_dir+file_name+"_"+str(i)+".pi")
             background_files.append(directory+'/repro/'+bin_spec_dir+file_name+"_"+str(i)+"_bkg.pi")
         except:
-            pass
-    Temperature,Temp_min,Temp_max,Abundance,Ab_min,Ab_max,Norm,Norm_min,Norm_max,reduced_chi_sq,Flux,Flux_min,Flux_max =\
-         FitXSPEC(spectrum_files,background_files,redshift,n_H,temp_guess,grouping,i,plot_dir)
+            break
+    try:
+        Temperature,Temp_min,Temp_max,Abundance,Ab_min,Ab_max,Norm,Norm_min,Norm_max,reduced_chi_sq,Flux,Flux_min,Flux_max =\
+            FitXSPEC(spectrum_files,background_files,redshift,n_H,temp_guess,grouping,i,plot_dir)
+    except:
+        Temperature = Temp_min = Temp_max = Abundance = Ab_min = Ab_max = Norm = Norm_min = Norm_max = reduced_chi_sq = Flux = Flux_min = Flux_max = 0
     with open('temp_'+str(i)+'.txt','w+') as out_temp:
         out_temp.write("%i %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E\n"% \
                 (i,Temperature,Temp_min,Temp_max,Abundance,Ab_min,Ab_max,Norm,Norm_min,Norm_max,reduced_chi_sq,Flux,Flux_min,Flux_max))
-
     return None
 #--------------------------------------------------------------------#
 def concat_temp_data(num_spec, output_file):
@@ -310,7 +313,7 @@ def Fitting(base_directory,dir,file_name,num_files,redshift,n_H,temp_guess,outpu
             os.makedirs(plot_dir)
     if os.path.isfile(file_name) == True:
         os.remove(file_name) #remove it
-    Parallel(n_jobs=1,prefer="processes")(delayed(fit_loop)\
+    Parallel(n_jobs=4,prefer="processes")(delayed(fit_loop)\
             (dir,bin_spec_dir,file_name,redshift,n_H,temp_guess,grouping,plot_dir,
                 base_directory,i) for i in tqdm(range(num_files)))
     concat_temp_data(num_files, output_file)
