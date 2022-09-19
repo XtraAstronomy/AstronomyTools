@@ -28,6 +28,8 @@ from sherpa.astro.xspec import *
 from sherpa.astro.all import *
 from sherpa.astro.ui import *
 from sherpa.all import *
+cflux = XScflux()
+
 #TURN OFF ON-SCREEN OUTPUT FROM SHERPA
 import logging
 logger = logging.getLogger("sherpa")
@@ -90,6 +92,39 @@ def obsid_set(src_model_dict,bkg_model_dict,obsid,bkg_src, obs_count,redshift,nH
     freeze(get_model_component('bkgApec'+str(obs_count)).kT)
     get_model_component('brem' + str(obs_count)).kT = 40.0
     freeze(get_model_component('brem' + str(obs_count)).kT)
+
+    return None
+
+
+#Get ready for flux calculations
+def flux_prep(src_model_dict,bkg_model_dict,src_spec,bkg_spec,obs_count,agn,deproj):
+    '''
+    Dynamically set source and background model for obsid for FLUX calculation
+    PARAMETERS:
+        src_model_dict - dictionary of source models for each obsid
+        bkg_model_dict - dictionary of background models for each obsid
+        src_spec - source spectra
+        bkg_spec - background spectra
+        obs_count - current number of Chandra observation ID out of all IDs
+        agn - boolean for additional AGN fit
+    '''
+    #freeze(get_model_component('bkgApec'+str(obs_count)).norm)
+    #freeze(get_model_component('brem'+str(obs_count)).norm)
+    if agn == False:
+        src_model_dict[src_spec] = get_model_component('abs1')*cflux(get_model_component('apec'+str(obs_count)))
+    if agn == True:
+        src_model_dict[src_spec] = get_model_component('abs1')*(cflux(get_model_component('apec'+str(obs_count)))+get_model_component('zpwd'+str(obs_count)))
+    set_source(obs_count, src_model_dict[src_spec])  # set model to source
+    freeze(get_model_component('apec' + str(obs_count)).kT)
+    freeze(get_model_component('apec' + str(obs_count)).Abundanc)
+    # Change bkg model component values
+    '''bkg_model_dict[bkg_spec] = get_model_component('bkgApec' + str(obs_count)) + get_model_component('abs1') * get_model_component(
+        'brem' + str(obs_count))
+    set_bkg_model(obs_count, bkg_model_dict[bkg_spec])
+    get_model_component('bkgApec' + str(obs_count)).kT = 0.18
+    freeze(get_model_component('bkgApec' + str(obs_count)).kT)
+    get_model_component('brem' + str(obs_count)).kT = 40.0
+    freeze(get_model_component('brem' + str(obs_count)).kT)'''
 
     return None
 #------------------------------------------------------------------------------#
@@ -165,10 +200,21 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,sp
     f = get_fit_results()
     reduced_chi_sq = float(f.rstat)
     #---------Set up Flux Calculation----------#
-    flux_calculation = sample_flux(get_model_component('apec1'), 0.01, 50.0, num=100, confidence=68)[0]
-    Flux = float(flux_calculation[0])
-    Flux_min = float(flux_calculation[1])
-    Flux_max = float(flux_calculation[2])
+    freeze(get_model_component('apec1').kT);freeze(get_model_component('apec1').Abundanc);
+    obs_count = 1
+    for src_spec in spectrum_files:
+        flux_prep(src_model_dict,bkg_model_dict, src_spec, background_files[int(obs_count-1)],obs_count, False, False)
+        obs_count += 1
+    set_method('neldermead')
+    cflux.lg10Flux.val = -13.5 # initial guess
+    cflux.Emin.val = 0.1
+    cflux.Emax.val = 2.4
+    fit()
+    Flux = cflux.lg10Flux.val
+    #flux_calculation = sample_flux(get_model_component('apec1'), 0.01, 50.0, num=1000, confidence=68)[0]
+    #Flux = 0#flux_calculation[0]
+    Flux_min = 0#flux_calculation[1]
+    Flux_max = 0#flux_calculation[2]
     reset(get_model())
     reset(get_source())
     clean()

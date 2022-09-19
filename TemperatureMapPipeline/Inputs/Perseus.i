@@ -23,6 +23,6 @@ Temp_Guess = 2.0
 wvt = False
 bin_spec = False
 num_bins = 542
-fit_spec = False
+fit_spec = True
 plot = True
 Colormap = inferno

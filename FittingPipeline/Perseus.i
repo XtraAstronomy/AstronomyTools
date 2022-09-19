@@ -15,6 +15,6 @@ n_H = 0.137
 Temp_Guess = 2.0
 #----------CHOICES---------------#
 extract_spectrum = False
-fit_spec = False
+fit_spec = True
 deproj = False
 plot = True
