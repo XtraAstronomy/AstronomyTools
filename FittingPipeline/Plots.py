@@ -16,7 +16,21 @@ matplotlib.rcParams.update({'errorbar.capsize': 2})
 #-----------------------------------INPUTS------------------------------------------#
 num_ticks = 5
 #-------------------------------------------------#
-def plot_data(temp_data,reg_dir,regions,base_dir,outfile_ext,redshift):
+def plot_data(temp_data, reg_dir, reg_file_prefix, num_bins, base_dir, outfile_ext, redshift):
+    """
+    Create thermodynamic profile plots: Temperature, Abundance, Cooling time, Pressure, Density
+
+    Args:
+        temp_data: Path to the temperature data for each annulus
+        reg_dir: Path to region files
+        reg_file_prefix: Prefix of region files
+        num_bins: Number of region files
+        base_dir: Path to base directory of data
+        outfile_ext: Extension to output name (e.x. 'standard', 'deproj')
+        redshift: Redshift of object
+
+    """
+    redshift = float(redshift)
     temp_d = open(temp_data); next(temp_d)
     bins = []
     pixels = []
@@ -61,12 +75,12 @@ def plot_data(temp_data,reg_dir,regions,base_dir,outfile_ext,redshift):
         flux.append(float(line.split(" ")[11]))
     temp_d.close()
     # Read in radius data
-    for region in regions:
-        with open(reg_dir+region+'.reg') as reg_:
+    for region_num in range(num_bins):
+        with open(reg_dir+reg_file_prefix+str(region_num)+'.reg') as reg_:
             reg_data = reg_.readlines()[3].split(')')[0].split('(')[1]
-            r_in_ = ls_calc(redshift,float(reg_data.split(',')[3].strip('"')))
+            r_in_ = ls_calc(redshift,float(reg_data.split(',')[2].strip('"')))
             r_in.append(r_in_)
-            r_out_ = ls_calc(redshift,float(reg_data.split(',')[2].strip('"')))
+            r_out_ = ls_calc(redshift,float(reg_data.split(',')[3].strip('"')))
             r_out.append(r_out_)
             r_mid.append((r_in_+r_out_)/2)
     # Pass to Annuli class for the rest of the calculations

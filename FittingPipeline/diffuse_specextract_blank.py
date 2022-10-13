@@ -7,7 +7,6 @@ from ciao_contrib.runtool import *
 #------------------------------------------------------------------------------#
 def spec_basic(evt_file,src_reg,obsid):
     #Create basic spectrum with normal arf file (un-corrected)
-    print(os.getcwd())
     specextract.punlearn()
     specextract.infile = evt_file+'[sky=region('+src_reg+'.reg)]'#[energy='+energy_range+']'
     specextract.outroot = src_reg
@@ -89,7 +88,7 @@ def main_extract(chandra_dir,source_dir,OBSIDS,source_reg):
     '''
     reproccesed_dir = 'repro'
     for obsid in OBSIDS:
-        print("Calculating Spectrum for %s"%obsid)
+        #print("Calculating Spectrum for %s"%obsid)
         os.chdir(chandra_dir+'/'+obsid+'/'+reproccesed_dir)
         #Make sure region file is in reprocessed directory
         shutil.copy(source_dir+'/'+source_reg+'.reg',os.getcwd()+'/'+source_reg+'.reg')
@@ -99,16 +98,18 @@ def main_extract(chandra_dir,source_dir,OBSIDS,source_reg):
         else:
             evt_file = "acisf"+obsid+"_repro_evt2.fits"
         convert_region(os.getcwd()+'/'+source_reg+'.reg', evt_file)
+
         #Check that blank sky file is there. If not, make on
         if os.path.exists(os.getcwd()+'/'+obsid+'_blank.evt'):
-            print(' Blanksky File Exists')
+            pass
+            #print(' Blanksky File Exists')
         else:
-                print(' Blanksky file does not exist... making one now...')
+                #print(' Blanksky file does not exist... making one now...')
                 blanksky.punlearn()
                 blanksky.evtfile = evt_file
                 blanksky.outfile = obsid+'_blank.evt'
                 blanksky()
-        print(' Extracting Spectra')
+        #print(' Extracting Spectra')
         spec_basic(evt_file,source_reg,obsid)
         #Make fits and image files for region
         fits_and_img(evt_file,source_reg)
