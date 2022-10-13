@@ -1,5 +1,6 @@
+base_dir = /home/carterrhea/Documents/Perseus
 #----------------------------WVT-----------------------------#
-image_fits = source.img
+image_fits = img_src.img
 exposure_map = none
 stn_target = 150
 pixel_radius = 0.5
@@ -8,10 +9,9 @@ roundness_crit = 0.3
 WVT_data = WVT_data_source_stn150
 #--------------------------FITTING---------------------------#
 #----------INPUT DATA------------#
-base_dir = /home/carterrhea/Documents/Cluster_Data/Perseus
-Name = 
+Name =
 ObsIDs = 3209,4289
-source_file = source
+source_file = img
 output_dir = binned_source_150/
 Temp_data = Temp_bin_source_stn150.txt
 multi = False
@@ -20,10 +20,9 @@ redshift = 0.0179
 n_H = 0.137
 Temp_Guess = 2.0
 #----------CHOICES---------------#
-wvt = True
-bin_spec = True
-num_bins = 0
+wvt = False
+bin_spec = False
+num_bins = 486
 fit_spec = True
 plot = True
 Colormap = inferno
-

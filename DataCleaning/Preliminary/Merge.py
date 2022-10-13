@@ -22,5 +22,8 @@ def merge_objects(Obsids,output_name,clean='yes'):
     for obsid in Obsids:
         id_string += obsid+"/repro/acisf"+obsid+"_repro_evt2_uncontam.fits,"
         id_hyphen += obsid+"-"
+    print("      Creating soft band merged image\n")
     os.system("merge_obs '"+id_string+"' "+output_name+"_Soft/ clobber=yes binsize=1 verbose=0 bands='0.5:2.0:1.32' cleanup="+clean )
+    print("      Creating broad band merged image\n")
+    os.system("merge_obs '"+id_string+"' "+output_name+"/ clobber=yes binsize=1 verbose=0 bands='0.5:8.0:1.45' cleanup="+clean )
     return None

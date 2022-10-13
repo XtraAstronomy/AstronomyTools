@@ -33,3 +33,12 @@ https://astronomytools.readthedocs.io/en/latest/
 
 ## Pumpkin
 If you are interested in our work on machine learning for X-ray spectral analysis, please see [Pumpkin](https://github.com/XtraAstronomy/Pumpkin).
+
+
+## Citation
+If you use any tools in this package, please use the following citation
+
+```
+Rhea C. L., Hlavacek-Larrondo J., Prasow-Émond M., 2020, X-tra Astronomy
+Tools Software Package, DOI 10.17605/OSF.IO/VWCKS
+```

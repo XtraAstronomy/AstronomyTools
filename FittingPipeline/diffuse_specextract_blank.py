@@ -37,6 +37,50 @@ def fits_and_img(evt_file,src_reg):
     dmcopy.clobber = True
     dmcopy()
 
+def convert_region(region, evt_file):
+    """
+    If pandas region convert to the correct ciao format
+    """
+    # Check if region is a panda region
+    with open(region) as file_in:
+        lines = []
+        for line in file_in:
+            lines.append(line)
+        if 'panda' in lines[-1]:
+            print('doing')
+            coordinates = lines[-1].replace('panda(', '').replace(')', '').split(',')
+            # Calculate physical coordinates
+            dmcoords.punlearn()
+            dmcoords.infile = evt_file
+            dmcoords.opt = 'cel'
+            dmcoords.celfmt = 'hms'
+            dmcoords.ra = coordinates[0]
+            dmcoords.dec = coordinates[1]
+            dmcoords()
+            # Update region
+            coordinates[0] = str(dmcoords.x)
+            coordinates[1] = str(dmcoords.y)
+            # Convert sizes to physical coordinates
+            coordinates[-3] = str(float(coordinates[-3].replace('"',''))*0.492)
+            coordinates[-2] = str(float(coordinates[-2].replace('"',''))*0.492)
+            # Return coordinate line to string
+            lines[-1] = ','.join(coordinates)
+            lines[-1] = 'panda('+lines[-1]+')'
+            
+            
+    with open(region.split('.')[0]+'_clean'+'.reg', 'w+') as file_out:
+        for ct,line in enumerate(lines):
+            if ct == 2:
+                file_out.write('physical\n')
+            else:            
+                file_out.write(line)
+    # Convert to the correct format
+    convert_ds9_region_to_ciao_stack.punlearn()
+    convert_ds9_region_to_ciao_stack.infile = region.split('.')[0]+'_clean'+'.reg'
+    convert_ds9_region_to_ciao_stack.outfile = region
+    convert_ds9_region_to_ciao_stack.clobber = True
+    convert_ds9_region_to_ciao_stack()
+    return None
 
 def main_extract(chandra_dir,source_dir,OBSIDS,source_reg):
     '''
@@ -54,6 +98,7 @@ def main_extract(chandra_dir,source_dir,OBSIDS,source_reg):
             evt_file = "acisf0"+obsid+"_repro_evt2.fits"
         else:
             evt_file = "acisf"+obsid+"_repro_evt2.fits"
+        convert_region(os.getcwd()+'/'+source_reg+'.reg', evt_file)
         #Check that blank sky file is there. If not, make on
         if os.path.exists(os.getcwd()+'/'+obsid+'_blank.evt'):
             print(' Blanksky File Exists')

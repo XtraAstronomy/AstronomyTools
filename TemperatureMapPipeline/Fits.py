@@ -12,6 +12,7 @@ ADDITIONAL NOTES:
 #from astropy.io import fits
 import os
 import subprocess
+import sherpa
 from sherpa.optmethods import LevMar
 from sherpa.stats import LeastSq
 from sherpa.plot import DataPlot
@@ -214,10 +215,15 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,temp_guess,grouping,sp
     reduced_chi_sq = f.rstat
     #---------Set up Flux Calculation----
     #print('Flux Calculations')
-    flux_calculation = sample_flux(get_model_component('apec1'), 0.01, 50.0, num=1000, confidence=68)[0]
-    Flux = flux_calculation[0]
-    Flux_min = flux_calculation[1]
-    Flux_max = flux_calculation[2]
+    try:
+        flux_calculation = sample_flux(get_model_component('apec1'), 0.01, 50.0, num=1000, confidence=68)[0]
+        Flux = flux_calculation[0]
+        Flux_min = flux_calculation[1]
+        Flux_max = flux_calculation[2]
+    except sherpa.utils.err.EstErr:
+        Flux = 0
+        Flux_min = 0
+        Flux_max = 0
     reset(get_model())
     reset(get_source())
     clean()

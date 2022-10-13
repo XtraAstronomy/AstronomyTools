@@ -1,3 +1,4 @@
+base_dir = /home/user/Documents/Cluster_Data/Perseus
 #----------------------------WVT-----------------------------#
 image_fits = source.img
 exposure_map = none
@@ -8,7 +9,6 @@ roundness_crit = 0.3
 WVT_data = WVT_data_source_stn150
 #--------------------------FITTING---------------------------#
 #----------INPUT DATA------------#
-base_dir = /home/user/Documents/Cluster_Data/Perseus
 Name =
 ObsIDs = 3209,4289
 source_file = source
