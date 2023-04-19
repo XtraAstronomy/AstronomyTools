@@ -8,7 +8,7 @@ This program will results in:
 
 
 In order to run this program you need the following:
-1. Reprocessed Chandra ObsIDs --> you also need to merge them (`merge\_obs`). 
+1. Reprocessed Chandra ObsIDs --> you also need to merge them (`merge\_obs`). If you use our DataCleaning script you will already have these.
 2. Fits image of region of interest (`roi.reg`) created from merged Observations. You can make this with the following command with `ciao` loaded:
     `dmcopy 'merged_evt.fits[sky=region(roi.reg)]' img_src.img opt=IMAGE`
 
