@@ -13,6 +13,7 @@ from ciao_contrib.runtool import *
 
 def calculate_annuli(image_path, center, targetSNR, num_annuli, output_dir, pix2arcsec=0.492):
     """
+    Calculate the size of annuli containing the same SNR.
 
     Args:
         image_path: Path to image
@@ -20,7 +21,7 @@ def calculate_annuli(image_path, center, targetSNR, num_annuli, output_dir, pix2
         targetSNR: Target SNR
         num_annuli: Number of annuli
         output_dir: Output directory
-        pix2arcsec: Pixel size in arcsec
+        pix2arcsec: Pixel size in arcsec (default 0.492 for Chandra)
 
     Returns:
         inner_radii: List of inner radii
@@ -62,6 +63,7 @@ def calculate_annuli(image_path, center, targetSNR, num_annuli, output_dir, pix2
 
 def create_annuli_file(image_path, center, inner_radii, outer_radii, output_dir, pix2arcsec=0.492):
     """
+    Create files containing the DS9 annuli. Each annulus will have its own file.
 
     Args:
         image_path: Path to image
@@ -69,7 +71,7 @@ def create_annuli_file(image_path, center, inner_radii, outer_radii, output_dir,
         inner_radii: List of inner radii
         outer_radii: List of outer radii
         output_dir: Output directory
-        pix2arcsec: Pixel size in arcsec
+        pix2arcsec: Pixel size in arcsec (default 0.492 for Chandra)
 
     Returns:
 
