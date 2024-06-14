@@ -46,7 +46,6 @@ def convert_region(region, evt_file):
         for line in file_in:
             lines.append(line)
         if 'panda' in lines[-1]:
-            print('doing')
             coordinates = lines[-1].replace('panda(', '').replace(')', '').split(',')
             # Calculate physical coordinates
             dmcoords.punlearn()
@@ -93,23 +92,24 @@ def main_extract(chandra_dir,source_dir,OBSIDS,source_reg):
         #Make sure region file is in reprocessed directory
         shutil.copy(source_dir+'/'+source_reg+'.reg',os.getcwd()+'/'+source_reg+'.reg')
         #Get event file
-        #if len(obsid) == 4:
-        #    evt_file = "acisf0"+obsid+"_repro_evt2.fits"
-        #else:
-        evt_file = "acisf"+obsid+"_repro_evt2.fits"
+        if len(obsid) == 3:
+            evt_file = "acisf00"+obsid+"_repro_evt2.fits"
+        elif len(obsid) == 4:
+            evt_file = "acisf0"+obsid+"_repro_evt2.fits"
+        else:
+            evt_file = "acisf"+obsid+"_repro_evt2.fits"
         convert_region(os.getcwd()+'/'+source_reg+'.reg', evt_file)
-
         #Check that blank sky file is there. If not, make on
         if os.path.exists(os.getcwd()+'/'+obsid+'_blank.evt'):
             pass
-            print(' Blanksky File Exists')
+           # print(' Blanksky File Exists')
         else:
-                print(' Blanksky file does not exist... making one now...')
+               # print(' Blanksky file does not exist... making one now...')
                 blanksky.punlearn()
                 blanksky.evtfile = evt_file
                 blanksky.outfile = obsid+'_blank.evt'
                 blanksky()
-        print(' Extracting Spectra')
+        #print(' Extracting Spectra')
         spec_basic(evt_file,source_reg,obsid)
         #Make fits and image files for region
         fits_and_img(evt_file,source_reg)

@@ -29,7 +29,7 @@ from sherpa.astro.all import *
 from sherpa.astro.ui import *
 from sherpa.all import *
 cflux = XScflux()
-
+set_conf_opt('numcores', 16)
 #TURN OFF ON-SCREEN OUTPUT FROM SHERPA
 import logging
 logger = logging.getLogger("sherpa")
@@ -74,17 +74,17 @@ def obsid_set(src_model_dict,bkg_model_dict,obsid,bkg_src, obs_count,redshift,nH
         # Change src model component values
         get_model_component('apec' + str(obs_count)).kT = Temp_guess
         get_model_component('apec' + str(obs_count)).redshift = redshift  # need to tie all together
-        get_model_component('apec' + str(obs_count)).Abundanc = 0.3
-        thaw(get_model_component('apec' + str(obs_count)).Abundanc)
+        get_model_component('apec' + str(obs_count)).Abundanc = 0.3  # Place holder guess
+        thaw(get_model_component('apec' + str(obs_count)).Abundanc)  # Make sure this is variable
         get_model_component('abs1').nH = nH_val  # change preset value
-        freeze(get_model_component('abs1'))
+        freeze(get_model_component('abs1'))  # Freeze the column density
     else:
         src_model_dict[obsid] = get_model_component('abs1') * xsapec('apec' + str(obs_count))
         get_model_component('apec'+str(obs_count)).kT = get_model_component('apec1').kT #link to first kT
-        get_model_component('apec' + str(obs_count)).redshift = redshift
-        get_model_component('apec' + str(obs_count)).Abundanc = get_model_component('apec1').Abundanc  # link to first kT
+        get_model_component('apec' + str(obs_count)).redshift = redshift  # Set redshift
+        get_model_component('apec' + str(obs_count)).Abundanc = get_model_component('apec1').Abundanc  # link to first abundance
     set_source(obs_count, src_model_dict[obsid]) #set model to source
-    set_bkg(obs_count, unpack_pha(bkg_src))
+    set_bkg(obs_count, unpack_pha(bkg_src)) # Set background model
     bkg_model_dict[obsid] = xsapec('bkgApec'+str(obs_count))+get_model_component('abs1')*xsbremss('brem'+str(obs_count))
     set_bkg_model(obs_count,bkg_model_dict[obsid])
     #Change bkg model component values
@@ -119,7 +119,7 @@ def flux_prep(src_model_dict,bkg_model_dict,src_spec,bkg_spec,obs_count,agn,depr
     return None
 #------------------------------------------------------------------------------#
 #------------------------------------------------------------------------------#
-def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,spec_count,plot_dir):
+def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,spec_count,plot_dir, flux=False):
     """
     Function to fit spectra using sherpa and XSPEC
 
@@ -132,12 +132,13 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,sp
         grouping: Number of counts to bin in sherpa fit
         spec_count: Bin number
         plot_dir: Path to plot directory
+        flux: Include flux calculation (default False)
 
     Return:
         Spectral fit parameters and their errors
     """
     set_stat('cstat')
-    set_method('neldermead')
+    set_method('levmar')
     hdu_number = 1  #Want evnts so hdu_number = 1
     src_model_dict = {}; bkg_model_dict = {}
     obs_count = 1
@@ -145,11 +146,12 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,sp
         obsid_set(src_model_dict, bkg_model_dict, spec_pha,background_files[int(obs_count-1)], obs_count, redshift, n_H, Temp_guess)
         obs_count += 1
     for ob_num in range(obs_count-1):
-        group_counts(ob_num+1,grouping)
+        group_counts(ob_num+1,20)
         notice_id(ob_num+1,0.5,8.0)
     fit()
     #set_log_sherpa()
-    #set_covar_opt("sigma",1)
+    set_covar_opt("sigma",1)
+    #print('  Error estimate')
     covar(1)#get_model_component('apec1').kT,get_model_component('apec1').Abundanc)
     #print(get_covar_results())
     mins = list(get_covar_results().parmins)
@@ -190,26 +192,30 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,sp
     f = get_fit_results()
     reduced_chi_sq = float(f.rstat)
     #---------Set up Flux Calculation----------#
-    try:
-        flux_calculation = sample_flux(get_model_component('apec1'), 0.01, 50.0, num=1000, confidence=68)[0]
-        Flux = flux_calculation[0]
-        Flux_min = flux_calculation[1]
-        Flux_max = flux_calculation[2]
-    except:
-        print('The fit is not sufficient to get a good constraint on the flux')
-        freeze(get_model_component('apec1').kT);freeze(get_model_component('apec1').Abundanc);
-        obs_count = 1
-        for src_spec in spectrum_files:
-            flux_prep(src_model_dict,bkg_model_dict, src_spec, background_files[int(obs_count-1)],obs_count, False, False)
-            obs_count += 1
-        set_method('neldermead')
-        cflux.lg10Flux.val = -13.5 # initial guess
-        cflux.Emin.val = 0.1
-        cflux.Emax.val = 2.4
-        fit()
-        Flux = cflux.lg10Flux.val
-        Flux_min = 0
-        Flux_max = 0
+    #print('  flux calculation')
+    if flux == True:
+        try:
+            flux_calculation = sample_flux(get_model_component('apec1'), 0.01, 50.0, num=1000, confidence=68)[0]
+            Flux = flux_calculation[0]
+            Flux_min = flux_calculation[1]
+            Flux_max = flux_calculation[2]
+        except:
+            print('The fit is not sufficient to get a good constraint on the flux')
+            freeze(get_model_component('apec1').kT);freeze(get_model_component('apec1').Abundanc);
+            obs_count = 1
+            for src_spec in spectrum_files:
+                flux_prep(src_model_dict,bkg_model_dict, src_spec, background_files[int(obs_count-1)],obs_count, False, False)
+                obs_count += 1
+            set_method('neldermead')
+            cflux.lg10Flux.val = -13.5 # initial guess
+            cflux.Emin.val = 0.1
+            cflux.Emax.val = 2.4
+            fit()
+            Flux = cflux.lg10Flux.val
+            Flux_min = 0
+            Flux_max = 0
+    else:
+        Flux =0; Flux_min=0; Flux_max=0
     reset(get_model())
     reset(get_source())
     clean()

@@ -17,6 +17,10 @@ import subprocess
 from LSCalc import ls_calc
 import deproject
 from astropy import units as u
+from sherpa.all import *
+from sherpa.astro.all import *
+from sherpa.astro.ui import *
+
 #------------------------------------------------------------------------------#
 #------------------------------------------------------------------------------#
 
@@ -74,12 +78,17 @@ def Fitting_Deprojected(base_directory,ObsIDs,file_name,num_files,redshift,n_H,T
     dep.set_par('xsapec.redshift', redshift)
     dep.set_par('xsphabs.nh', n_H)
     dep.set_par('xsapec.Abundanc', 0.3)
+    set_method("levmar")
+    set_stat("chi2xspecvar")
     dep.subtract()  # Subtract associated background. Read in automatically earlier
     onion = dep.fit()
     onion_errs = dep.conf()
     file_to_write = open(output_file+"_deproj.txt",'w+')
-    file_to_write.write("BinNumber Temperature Temp_min Temp_max Abundance Ab_min Ab_max Norm Norm_min Norm_max ReducedChiSquare Flux Flux_min Flux_max\n")
+    #file_to_write.write("BinNumber Temperature Temp_min Temp_max Abundance Ab_min Ab_max Norm Norm_min Norm_max ReducedChiSquare Flux Flux_min Flux_max\n")
     file_to_write.write('BinNumber r_in r_out temp norm dens \n')
-    for row,row_err in enumerate(zip(onion[:], onion_errs[:])):
-        file_to_write.write('%i %.2E %.2E %.2E %.2E %.2E \n'%(row[0], row[1], row[2], row[-3], row[-2], row[-1]))
+    print(onion)
+    #for row,row_err in enumerate(zip(onion[:], onion_errs[:])):
+    for annulus in range(num_bins):
+        file_to_write.write('%i %.2E %.2E %.2E %.2E %.2E \n'%(onion['annulus'][annulus], onion['rlo_ang'][annulus], onion['rhi_ang'][annulus], onion['xsapec.kT'][annulus], onion['xsapec.norm'][annulus], onion['density'][annulus]))
+        #file_to_write.write('%i %.2E %.2E %.2E %.2E %.2E \n'%(row[0], row[1], row[2], row[-3], row[-2], row[-1]))
     file_to_write.close()

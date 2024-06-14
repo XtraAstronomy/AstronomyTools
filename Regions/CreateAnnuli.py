@@ -85,21 +85,24 @@ def create_annuli_file(image_path, center, inner_radii, outer_radii, output_dir,
     dmcoords.logicaly = cen_y
     dmcoords()
     x, y = dmcoords.x, dmcoords.y
+    ra, dec = dmcoords.ra, dmcoords.dec
     annulus_ct = 0
     for inner_radius, outer_radius in zip(inner_radii, outer_radii):
         with open('%s/annulus_%i.reg' % (output_dir, annulus_ct), 'w+') as new_reg:
             new_reg.write("# Region file format: DS9 version 4.1 \n")
+            new_reg.write("global color=green dashlist=8 3 width=1 font='helvetica 10 normal roman' select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1 \n")
             new_reg.write("physical \n")
+            #new_reg.write('annulus(%s,%s,%.3f",%.3f")' % (ra, dec, inner_radius * pix2arcsec, outer_radius * pix2arcsec))
             new_reg.write('annulus(%s,%s,%.3f,%.3f)' % (x, y, inner_radius * pix2arcsec, outer_radius * pix2arcsec))
         annulus_ct += 1
 
 
 if __name__ == '__main__':
-    image_path = '/home/crhea/Documents/Perseus/XrayFits/img_src.img'
-    center = (215, 144)
-    output_dir = '/home/crhea/Documents/Perseus/XrayFits/regions'
+    image_path = '/export/home/carterrhea/PKS0745/PKS0745_Broad/broad_thresh.img'
+    center = (2466, 2193)
+    output_dir = '/export/home/carterrhea/PKS0745/regions'
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
-    inner_radii, outer_radii = calculate_annuli(image_path, center, 35, 10, output_dir)
+    inner_radii, outer_radii = calculate_annuli(image_path, center, 20, 10, output_dir)
     create_annuli_file(image_path, center, inner_radii, outer_radii, output_dir)
