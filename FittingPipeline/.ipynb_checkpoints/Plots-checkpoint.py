@@ -62,7 +62,6 @@ def plot_data(temp_data, reg_dir, reg_file_prefix, num_bins, base_dir, outfile_e
     flux = []
     # Read in data
     for line in temp_d:
-        print(temp_d)
         temps.append(float(line.split(" ")[1]))
         temps_min.append(float(line.split(" ")[1])-float(line.split(" ")[2]))
         temps_max.append(float(line.split(" ")[3])-float(line.split(" ")[1]))
@@ -131,6 +130,73 @@ def plot_data(temp_data, reg_dir, reg_file_prefix, num_bins, base_dir, outfile_e
         file_out.write('BinNumber R_in R_out Tcool Tcool_min Tcool_max Press Press_min Press_max Dens Dens_min Dens_max\n')
         for i in range(len(temps)):
             file_out.write('%i %f %f %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E\n'%(i,r_in[i],r_out[i],tcool[i],tcool_min[i],tcool_max[i],press[i],press_min[i],press_max[i],dens[i],dens_min[i],dens_max[i]))
+    return None
+
+
+def plot_data_deproj(temp_data, reg_dir, reg_file_prefix, num_bins, base_dir, outfile_ext, redshift):
+    """
+    Create thermodynamic profile plots: Temperature, Abundance, Cooling time, Pressure, Density
+
+    Args:
+        temp_data: Path to the temperature data for each annulus
+        reg_dir: Path to region files
+        reg_file_prefix: Prefix of region files
+        num_bins: Number of region files
+        base_dir: Path to base directory of data
+        outfile_ext: Extension to output name (e.x. 'standard', 'deproj')
+        redshift: Redshift of object
+
+    """
+    redshift = float(redshift)
+    temp_d = open(temp_data); next(temp_d)
+    bins = []
+    pixels = []
+    pixel_num = 0
+    #Create bins and add pixels
+    #Add temperatures and Reduced Chi Squares to bins
+    r_in = []
+    r_out = []
+    r_mid = []
+    temps = []
+    temps_min = []
+    temps_max = []
+    dens = []
+    dens_min = []
+    dens_max = []
+    # Read in data
+    for line in temp_d:
+        temps.append(float(line.split(" ")[3]))
+        temps_min.append(float(line.split(" ")[4]))
+        temps_max.append(float(line.split(" ")[5]))
+        dens.append(float(line.split(" ")[9]))
+        dens_min.append(float(line.split(" ")[10]))
+        dens_max.append(float(line.split(" ")[11]))
+    temp_d.close()
+    # Read in radius data
+    for region_num in range(num_bins):
+        with open(reg_dir+reg_file_prefix+str(region_num)+'.reg') as reg_:
+            reg_data = reg_.readlines()[3].split(')')[0].split('(')[1]
+            r_in_ = ls_calc(redshift,float(reg_data.split(',')[2].strip('"')))
+            r_in.append(r_in_)
+            r_out_ = ls_calc(redshift,float(reg_data.split(',')[3].strip('"')))
+            r_out.append(r_out_)
+            r_mid.append((r_in_+r_out_)/2)
+    
+    #------------------------Plotting---------------------------#
+    # TEMPERATURE
+    plt.errorbar(r_mid,temps,yerr=[temps_min,temps_max], fmt='o')
+    plt.xlabel('Radius (kpc)')
+    plt.ylabel('Temperature (keV)')
+    plt.savefig(base_dir+'/'+outfile_ext+'_temp_deproj.png')
+    plt.clf()
+    # Density
+    plt.errorbar(r_mid,dens,yerr=[dens_min,dens_max], fmt='o')
+    plt.xlabel('Radius (kpc)')
+    plt.ylabel(r'Density (cm$^{-3}$)')
+    plt.yscale('log')
+    plt.savefig(base_dir+'/'+outfile_ext+'_dens_deproj.png')
+    plt.clf()
+    
     return None
 #-------------------------------------------------#
 #-------------------------------------------------#

@@ -98,11 +98,11 @@ def create_annuli_file(image_path, center, inner_radii, outer_radii, output_dir,
 
 
 if __name__ == '__main__':
-    image_path = '/export/home/carterrhea/PKS0745/PKS0745_Broad/broad_thresh.img'
-    center = (2466, 2193)
-    output_dir = '/export/home/carterrhea/PKS0745/regions'
+    image_path = '/home/crhea/Documents/PKS0745/PKS0745/0.5-8.0_thresh.img'
+    center = (2466, 2194)
+    output_dir = '/home/crhea/Documents/PKS0745/regions'
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
-    inner_radii, outer_radii = calculate_annuli(image_path, center, 20, 10, output_dir)
+    inner_radii, outer_radii = calculate_annuli(image_path, center, 35, 10, output_dir)
     create_annuli_file(image_path, center, inner_radii, outer_radii, output_dir)

@@ -73,22 +73,33 @@ def Fitting_Deprojected(base_directory,ObsIDs,file_name,num_files,redshift,n_H,T
     # Set up fit parameters
     dep.set_source('xsphabs*xsapec')
     dep.ignore(None, 0.5)
-    dep.ignore(8, None)
+    dep.ignore(7.0, None)
     dep.freeze("xsphabs.nh")
     dep.set_par('xsapec.redshift', redshift)
     dep.set_par('xsphabs.nh', n_H)
-    dep.set_par('xsapec.Abundanc', 0.3)
+    dep.set_par('xsapec.Abundanc', 0.4)
+    dep.thaw('xsapec.Abundanc')
     set_method("levmar")
     set_stat("chi2xspecvar")
     dep.subtract()  # Subtract associated background. Read in automatically earlier
     onion = dep.fit()
-    onion_errs = dep.conf()
     file_to_write = open(output_file+"_deproj.txt",'w+')
-    #file_to_write.write("BinNumber Temperature Temp_min Temp_max Abundance Ab_min Ab_max Norm Norm_min Norm_max ReducedChiSquare Flux Flux_min Flux_max\n")
-    file_to_write.write('BinNumber r_in r_out temp norm dens \n')
-    print(onion)
-    #for row,row_err in enumerate(zip(onion[:], onion_errs[:])):
+    file_to_write.write("BinNumber r_in r_out temp temp_min temp_max norm norm_min norm_max dens dens_min dens_max \n")
+    #file_to_write.write('BinNumber r_in r_out temp norm dens \n')
+    #try:
+    onion_errs = dep.conf()
     for annulus in range(num_bins):
-        file_to_write.write('%i %.2E %.2E %.2E %.2E %.2E \n'%(onion['annulus'][annulus], onion['rlo_ang'][annulus], onion['rhi_ang'][annulus], onion['xsapec.kT'][annulus], onion['xsapec.norm'][annulus], onion['density'][annulus]))
+        #file_to_write.write('%i %.2E %.2E %.2E %.2E %.2E \n'%(onion['annulus'][annulus], onion['rlo_ang'][annulus], onion['rhi_ang'][annulus], onion['xsapec.kT'][annulus], onion['xsapec.norm'][annulus], onion['density'][annulus]))
+
+        file_to_write.write('%i %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E\n'%(onion['annulus'][annulus], onion['rlo_ang'][annulus], onion['rhi_ang'][annulus], onion['xsapec.kT'][annulus], onion['xsapec.kT'][annulus]+onion_errs['xsapec.kT_lo'][annulus], onion['xsapec.kT'][annulus]+onion_errs['xsapec.kT_hi'][annulus], onion['xsapec.norm'][annulus], onion['xsapec.norm'][annulus]+onion_errs['xsapec.norm_lo'][annulus], onion['xsapec.norm'][annulus]+onion_errs['xsapec.norm_hi'][annulus], onion['density'][annulus], onion['density'][annulus]+onion_errs['density_lo'][annulus], onion['density'][annulus]+onion_errs['density_hi'][annulus]))
+    
+    """except:
+        print('No error estimates due to a bad fit')
+        for annulus in range(num_bins):
+            #file_to_write.write('%i %.2E %.2E %.2E %.2E %.2E \n'%(onion['annulus'][annulus], onion['rlo_ang'][annulus], onion['rhi_ang'][annulus], onion['xsapec.kT'][annulus], onion['xsapec.norm'][annulus], onion['density'][annulus]))
+    
+            file_to_write.write('%i %.2E %.2E %.2E %.2E %.2E \n'%(onion['annulus'][annulus], onion['rlo_ang'][annulus], onion['rhi_ang'][annulus], onion['xsapec.kT'][annulus], onion['xsapec.kT'][annulus], onion['xsapec.kT'][annulus], onion['xsapec.norm'][annulus], onion['xsapec.norm'][annulus], onion['xsapec.norm'][annulus], onion['density'][annulus], onion['density'][annulus], onion['density'][annulus]))"""
+    
+    
         #file_to_write.write('%i %.2E %.2E %.2E %.2E %.2E \n'%(row[0], row[1], row[2], row[-3], row[-2], row[-1]))
     file_to_write.close()

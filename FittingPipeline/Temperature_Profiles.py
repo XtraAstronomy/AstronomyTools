@@ -10,7 +10,7 @@ What should you already have?
 import os
 import sys
 from read_input import read_input_file
-from Fits import Fitting
+from FittingPipeline.FitsOLD import Fitting
 from Fits_Deprojected import Fitting_Deprojected
 from Plots import plot_data
 from diffuse_specextract_blank import main_extract

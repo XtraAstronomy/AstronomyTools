@@ -78,7 +78,7 @@ class Annulus:
         for i in range(3):
             norm_vol = np.sqrt((1.2*self.norm[i])/self.vol)
             self.dens.append(const*red_dep*norm_vol)
-        print(self.dens)
+
     def calc_press(self):
         '''
         Calculate pressure and errors

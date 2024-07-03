@@ -29,7 +29,8 @@ from sherpa.astro.all import *
 from sherpa.astro.ui import *
 from sherpa.all import *
 cflux = XScflux()
-
+set_conf_opt('numcores', 16)
+import matplotlib.pyplot as plt
 #TURN OFF ON-SCREEN OUTPUT FROM SHERPA
 import logging
 logger = logging.getLogger("sherpa")
@@ -56,7 +57,7 @@ def isFloat(string):
 
 #------------------------------------------------------------------------------#
 #Dynamically set source for OBSID
-def obsid_set(src_model_dict,bkg_model_dict,obsid,bkg_src, obs_count,redshift,nH_val,Temp_guess, spec_count, AGN):
+def obsid_set(src_model_dict,bkg_model_dict,obsid,bkg_src, obs_count,redshift,nH_val,Temp_guess, AGN):
     '''
     Function to set the source and background model for the observation
 
@@ -66,43 +67,45 @@ def obsid_set(src_model_dict,bkg_model_dict,obsid,bkg_src, obs_count,redshift,nH
         obsid : The source pha/pi file
         bkg_src : The background pha/pi file
         obs_count : The count of the current observation
+        redshift:
+        nH_val:
+        Temp_guess:
+        AGN:
 
     '''
     load_pha(obs_count,obsid,use_errors=True) #Read in
     if obs_count == 1:  # Set if this is the first
-        if spec_count < AGN:
+        if obs_count <= AGN:
             src_model_dict[obsid] = xsphabs('abs' + str(obs_count)) * (xsapec(
                 'apec' + str(obs_count)) + xszphabs('zphabs' + str(obs_count)) * (xspowerlaw('pow'+ str(obs_count)) + xsgaussian('gauss' + str(obs_count))))  # set model and name
             thaw(get_model_component('zphabs1').redshift)  # Freeze the column density
-            get_model_component('gauss1').LineE = 6.4
-            get_model_component('pow1').PhoIndex = 1.8
+
         else:
             src_model_dict[obsid] = xsphabs('abs'+str(obs_count)) * xsapec('apec'+str(obs_count)) #set model and name
         # Change src model component values
         get_model_component('apec' + str(obs_count)).kT = Temp_guess
         get_model_component('apec' + str(obs_count)).redshift = redshift  # need to tie all together
-        get_model_component('apec' + str(obs_count)).Abundanc = 0.3
-        thaw(get_model_component('apec' + str(obs_count)).Abundanc)
+        get_model_component('apec' + str(obs_count)).Abundanc = 0.4  # Place holder guess
+        thaw(get_model_component('apec' + str(obs_count)).Abundanc)  # Make sure this is variable
         get_model_component('abs1').nH = nH_val  # change preset value
-        freeze(get_model_component('abs1'))
+        freeze(get_model_component('abs1'))  # Freeze the column density
     else:
-        if spec_count < AGN:
+        if obs_count < AGN:
             src_model_dict[obsid] = get_model_component('abs1') * (xsapec(
                 'apec' + str(obs_count)) + xszphabs('zphabs' + str(obs_count)) * (xspowerlaw('pow'+ str(obs_count)) + xsgaussian('gauss' + str(obs_count))))  # set model and name
             thaw(get_model_component('zphabs1').redshift)  # Freeze the column density
             # Tie AGN specific parameters
-            get_model_component('zphabs' + str(obs_count)).redshift = get_model_component('zphabs1').redshift 
-            get_model_component('zphabs' + str(obs_count)).nH = get_model_component('zphabs1').nH
-            get_model_component('pow' + str(obs_count)).PhoIndex = get_model_component('pow1').PhoIndex 
-            get_model_component('gauss' + str(obs_count)).LineE = get_model_component('gauss1').LineE
-            get_model_component('gauss' + str(obs_count)).Sigma = get_model_component('gauss1').Sigma
+            get_model_component('zphabs' + str(obs_count)).kT = get_model_component('zphabs1').kT  # link to first kT
+            get_model_component('pow' + str(obs_count)).kT = get_model_component('pow1').kT  # link to first kT
+            get_model_component('gauss' + str(obs_count)).kT = get_model_component('gauss1').kT  # link to first kT
         else:
             src_model_dict[obsid] = get_model_component('abs1') * xsapec('apec' + str(obs_count))
+        # Tie thermodynamic model parameters
         get_model_component('apec'+str(obs_count)).kT = get_model_component('apec1').kT #link to first kT
-        get_model_component('apec' + str(obs_count)).redshift = redshift
-        get_model_component('apec' + str(obs_count)).Abundanc = get_model_component('apec1').Abundanc  # link to first Abundance
+        get_model_component('apec' + str(obs_count)).redshift = redshift  # Set redshift
+        get_model_component('apec' + str(obs_count)).Abundanc = get_model_component('apec1').Abundanc  # link to first abundance
     set_source(obs_count, src_model_dict[obsid]) #set model to source
-    set_bkg(obs_count, unpack_pha(bkg_src))
+    set_bkg(obs_count, unpack_pha(bkg_src)) # Set background model
     bkg_model_dict[obsid] = xsapec('bkgApec'+str(obs_count))+get_model_component('abs1')*xsbremss('brem'+str(obs_count))
     set_bkg_model(obs_count,bkg_model_dict[obsid])
     #Change bkg model component values
@@ -126,8 +129,6 @@ def flux_prep(src_model_dict,bkg_model_dict,src_spec,bkg_spec,obs_count,agn,depr
         obs_count - current number of Chandra observation ID out of all IDs
         agn - boolean for additional AGN fit
     '''
-    #freeze(get_model_component('bkgApec'+str(obs_count)).norm)
-    #freeze(get_model_component('brem'+str(obs_count)).norm)
     if agn == False:
         src_model_dict[src_spec] = get_model_component('abs1')*cflux(get_model_component('apec'+str(obs_count)))
     if agn == True:
@@ -135,19 +136,11 @@ def flux_prep(src_model_dict,bkg_model_dict,src_spec,bkg_spec,obs_count,agn,depr
     set_source(obs_count, src_model_dict[src_spec])  # set model to source
     freeze(get_model_component('apec' + str(obs_count)).kT)
     freeze(get_model_component('apec' + str(obs_count)).Abundanc)
-    # Change bkg model component values
-    '''bkg_model_dict[bkg_spec] = get_model_component('bkgApec' + str(obs_count)) + get_model_component('abs1') * get_model_component(
-        'brem' + str(obs_count))
-    set_bkg_model(obs_count, bkg_model_dict[bkg_spec])
-    get_model_component('bkgApec' + str(obs_count)).kT = 0.18
-    freeze(get_model_component('bkgApec' + str(obs_count)).kT)
-    get_model_component('brem' + str(obs_count)).kT = 40.0
-    freeze(get_model_component('brem' + str(obs_count)).kT)'''
-
+    
     return None
 #------------------------------------------------------------------------------#
 #------------------------------------------------------------------------------#
-def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,spec_count,plot_dir, AGN):
+def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,spec_count,plot_dir, flux=False, AGN=0):
     """
     Function to fit spectra using sherpa and XSPEC
 
@@ -160,25 +153,30 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,sp
         grouping: Number of counts to bin in sherpa fit
         spec_count: Bin number
         plot_dir: Path to plot directory
+        flux: Include flux calculation (default False)
+        AGN: Number of annuli in which to include the AGN (default 0)
 
     Return:
         Spectral fit parameters and their errors
     """
-    set_stat('chi2gehrels')
+    set_stat('cstat')
     set_method('levmar')
-    hdu_number = 1  #Want evnts so hdu_number = 1
     src_model_dict = {}; bkg_model_dict = {}
     obs_count = 1
     for spec_pha in spectrum_files:
-        obsid_set(src_model_dict, bkg_model_dict, spec_pha,background_files[int(obs_count-1)], obs_count, redshift, n_H, Temp_guess, spec_count, AGN)
+        obsid_set(src_model_dict, bkg_model_dict, spec_pha,background_files[int(obs_count-1)], obs_count, redshift, n_H, Temp_guess, AGN)
         obs_count += 1
     for ob_num in range(obs_count-1):
-        group_counts(ob_num+1,grouping)
-        notice_id(ob_num+1,0.5,8.0)
+        group_counts(ob_num+1, 20)
+        notice_id(ob_num+1, 0.5, 7.0)
     fit()
+    plot_fit_resid()
+    plt.savefig('FitPlots/%i.png'%spec_count)
+    plt.clf()
     #set_log_sherpa()
     set_covar_opt("sigma",3)
-    covar(get_model_component('apec1').kT, get_model_component('apec1').Abundanc)
+    #print('  Error estimate')
+    covar(1)#get_model_component('apec1').kT,get_model_component('apec1').Abundanc)
     #print(get_covar_results())
     mins = list(get_covar_results().parmins)
     maxes = list(get_covar_results().parmaxes)
@@ -218,21 +216,30 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,sp
     f = get_fit_results()
     reduced_chi_sq = float(f.rstat)
     #---------Set up Flux Calculation----------#
-    freeze(get_model_component('apec1').kT);freeze(get_model_component('apec1').Abundanc);
-    obs_count = 1
-    for src_spec in spectrum_files:
-        flux_prep(src_model_dict,bkg_model_dict, src_spec, background_files[int(obs_count-1)],obs_count, False, False)
-        obs_count += 1
-    set_method('neldermead')
-    cflux.lg10Flux.val = -13.5 # initial guess
-    cflux.Emin.val = 0.1
-    cflux.Emax.val = 2.4
-    fit()
-    Flux = cflux.lg10Flux.val
-    #flux_calculation = sample_flux(get_model_component('apec1'), 0.01, 50.0, num=1000, confidence=68)[0]
-    #Flux = 0#flux_calculation[0]
-    Flux_min = 0#flux_calculation[1]
-    Flux_max = 0#flux_calculation[2]
+    #print('  flux calculation')
+    if flux == True:
+        try:
+            flux_calculation = sample_flux(get_model_component('apec1'), 0.01, 50.0, num=1000, confidence=68)[0]
+            Flux = flux_calculation[0]
+            Flux_min = flux_calculation[1]
+            Flux_max = flux_calculation[2]
+        except:
+            print('The fit is not sufficient to get a good constraint on the flux')
+            freeze(get_model_component('apec1').kT);freeze(get_model_component('apec1').Abundanc);
+            obs_count = 1
+            for src_spec in spectrum_files:
+                flux_prep(src_model_dict,bkg_model_dict, src_spec, background_files[int(obs_count-1)],obs_count, False, False)
+                obs_count += 1
+            set_method('neldermead')
+            cflux.lg10Flux.val = -13.5 # initial guess
+            cflux.Emin.val = 0.1
+            cflux.Emax.val = 2.4
+            fit()
+            Flux = cflux.lg10Flux.val
+            Flux_min = 0
+            Flux_max = 0
+    else:
+        Flux =0; Flux_min=0; Flux_max=0
     reset(get_model())
     reset(get_source())
     clean()
@@ -240,7 +247,7 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,sp
 
 
 
-def Fitting(base_directory,dir,file_name,num_files,redshift,n_H,Temp_guess,output_file, AGN):
+def Fitting(base_directory,dir,file_name,num_files,redshift,n_H,Temp_guess,output_file, AGN=0):
     """
     Fit each region's spectra and create a text file containing the spectral
     fit information for each bin
@@ -254,13 +261,14 @@ def Fitting(base_directory,dir,file_name,num_files,redshift,n_H,Temp_guess,outpu
         n_H: Column density
         temp_guess: Initial temperature guess
         output_file: Text file containing each bin's spectral fit information
+        AGN: Number of annuli in which to include the AGN (default 0)
 
     Return:
         None
     """
     energy_min = 0.5
-    energy_max = 8.0
-    grouping = 20
+    energy_max = 7.0
+    grouping = 10
     plot_dir = base_directory+'/FitPlots/'
     output_file = output_file.split('.')[0]
     os.chdir(base_directory)
@@ -284,12 +292,6 @@ def Fitting(base_directory,dir,file_name,num_files,redshift,n_H,Temp_guess,outpu
                 else:
                     spectrum_files.append(directory+'/repro/'+file_name+str(i)+".pi")
                     background_files.append(directory+'/repro/'+file_name+str(i)+"_bkg.pi")
-            #except:
-                #print('Error: The spectra files for region %i were not found!!!'%i)
-                #pass
-        #try:
-        Temperature,Temp_min,Temp_max,Abundance,Ab_min,Ab_max,Norm,Norm_min,Norm_max,reduced_chi_sq,Flux,Flux_min,Flux_max = FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,i,plot_dir, AGN)
+        Temperature,Temp_min,Temp_max,Abundance,Ab_min,Ab_max,Norm,Norm_min,Norm_max,reduced_chi_sq,Flux,Flux_min,Flux_max = FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,i,plot_dir, AGN=0)
         file_to_write.write("%i %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E %.2E\n"%(i,Temperature,Temp_min,Temp_max,Abundance,Ab_min,Ab_max,Norm,Norm_min,Norm_max,reduced_chi_sq,Flux,Flux_min,Flux_max))
-        #except:
-        #    print("No spectra was fit for bin number %i!"%i)
     file_to_write.close()

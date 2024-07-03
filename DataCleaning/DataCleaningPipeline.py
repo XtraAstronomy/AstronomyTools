@@ -44,13 +44,13 @@ def run_pipeline():
     #--------------------------------Multiple Obsid Scenario--------------------------------------#
     print("#-----Multiple Observation Mode----#")
     #We must clean each observation first :)
-    print("Beginning cleaning process for each individual obsid...")
+    print("Beginning cleaning process for each individual ObsID...")
     for obsid_ in inputs['dir_list']: #left as a list to keep input deck the same and sample :)
         if inputs['cleaning'].lower() == 'true':
             main_out_obsid = open(inputs['home_dir'] + "/" + obsid_ + "/decisions.txt", 'w+')
             os.chdir(inputs['home_dir'] + '/' + obsid_ + '/Background')
-            print("We are on obsid %s"%obsid_)
-            main_out_obsid.write('Obsid %s'%obsid_)
+            print("We are on ObsID %s"%obsid_)
+            main_out_obsid.write('ObsID %s'%obsid_)
             print("    Now let us pick our background ccd...")
             #Lets take a look at each ccd and pick our background and src ccds
             bkg_ccd = display_ccds(ccds,obsid_,Merge=True)
