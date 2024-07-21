@@ -8,9 +8,9 @@ from ciao_contrib.runtool import *
 def spec_basic(evt_file,src_reg,obsid):
     #Create basic spectrum with normal arf file (un-corrected)
     specextract.punlearn()
-    specextract.infile = evt_file+'[sky=region('+src_reg+'.reg)]'#[energy='+energy_range+']'
+    specextract.infile = evt_file+'[sky=region('+src_reg+'_clean.reg)]'#[energy='+energy_range+']'
     specextract.outroot = src_reg
-    specextract.bkgfile = obsid+'_blank.evt[sky=region('+src_reg+'.reg)]'#[energy='+energy_range+']'
+    specextract.bkgfile = obsid+'_blank.evt[sky=region('+src_reg+'_clean.reg)]'#[energy='+energy_range+']'
     specextract.weight = True
     specextract.weight_rmf = True
     specextract.energy_wmap = '500:10000'#energy_range
@@ -24,14 +24,14 @@ def spec_basic(evt_file,src_reg,obsid):
 
 def fits_and_img(evt_file,src_reg):
     dmcopy.punlearn()
-    dmcopy.infile = evt_file+'[sky=region('+src_reg+'.reg)]'
-    dmcopy.outfile = src_reg+'.fits'
+    dmcopy.infile = evt_file+'[sky=region('+src_reg+'_clean.reg)]'
+    dmcopy.outfile = src_reg+'_clean.fits'
     dmcopy.clobber = True
     dmcopy()
     #image
     dmcopy.punlearn()
-    dmcopy.infile = src_reg+'.fits'
-    dmcopy.outfile = src_reg+'.img'
+    dmcopy.infile = src_reg+'_clean.fits'
+    dmcopy.outfile = src_reg+'_clean.img'
     dmcopy.option = 'image'
     dmcopy.clobber = True
     dmcopy()

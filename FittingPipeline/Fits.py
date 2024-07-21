@@ -73,7 +73,7 @@ def obsid_set(src_model_dict,bkg_model_dict,obsid,bkg_src, obs_count,redshift,nH
         if spec_count < AGN:
             src_model_dict[obsid] = xsphabs('abs' + str(obs_count)) * (xsapec(
                 'apec' + str(obs_count)) + xszphabs('zphabs' + str(obs_count)) * (xspowerlaw('pow'+ str(obs_count)) + xsgaussian('gauss' + str(obs_count))))  # set model and name
-            thaw(get_model_component('zphabs1').redshift)  # Freeze the column density
+            thaw(get_model_component('zphabs1').redshift)
             get_model_component('gauss1').LineE = 6.4
             get_model_component('pow1').PhoIndex = 1.8
         else:
@@ -164,7 +164,7 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,sp
     Return:
         Spectral fit parameters and their errors
     """
-    set_stat('chi2gehrels')
+    set_stat('cstat')
     set_method('levmar')
     hdu_number = 1  #Want evnts so hdu_number = 1
     src_model_dict = {}; bkg_model_dict = {}
@@ -178,6 +178,11 @@ def FitXSPEC(spectrum_files,background_files,redshift,n_H,Temp_guess,grouping,sp
     fit()
     #set_log_sherpa()
     set_covar_opt("sigma",3)
+    if AGN > 0 and spec_count < AGN:
+        freeze(get_model_component('zphabs1').redshift)
+        freeze(get_model_component('gauss1').LineE)
+        freeze(get_model_component('pow1').PhoIndex)
+        fit()
     covar(get_model_component('apec1').kT, get_model_component('apec1').Abundanc)
     #print(get_covar_results())
     mins = list(get_covar_results().parmins)
