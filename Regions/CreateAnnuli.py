@@ -3,6 +3,8 @@ This code will create annuli of the same SNR given an X-ray image
 
 The X-ray image should **NOT** be exposure corrected!
 
+The center should be given in image coordinates.
+
 """
 import os
 from astropy.io import fits
@@ -42,6 +44,7 @@ def calculate_annuli(image_path, center, targetSNR, num_annuli, output_dir, pix2
             np.sum(image[cen_x + radius_inner:cen_x + radius_outer, cen_y + radius_inner:cen_y + radius_outer], axis=0),
             axis=0)  # Calculate SNR
         SNR = np.sqrt(sum_flux)
+        print(SNR)
         if SNR > targetSNR:
             annulus += 1  # Update annulus number
             inner_radii.append(radius_inner)  # Update inner radii list
@@ -98,9 +101,9 @@ def create_annuli_file(image_path, center, inner_radii, outer_radii, output_dir,
 
 
 if __name__ == '__main__':
-    image_path = '/home/crhea/Documents/PKS0745/PKS0745/0.5-8.0_thresh.img'
-    center = (2466, 2194)
-    output_dir = '/home/crhea/Documents/PKS0745/regions'
+    image_path = '/home/crhea/Downloads/broad_thresh.img'
+    center = (1967, 2543)
+    output_dir = '/home/crhea/Downloads/regions'
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
